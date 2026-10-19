@@ -28,6 +28,9 @@ namespace Runtime::RHI {
 		virtual void CopyBufferToImage(Buffer* buffer, Image* image, ImageLayout layout, u32 width, u32 height) = 0;
 
 		virtual void DrawVertex(u32 count) = 0;
+
+		virtual void BindPipeline(Pipeline* pipeline) = 0;
+		virtual void PushConstant(Pipeline* pipeline, void* data, usize size, usize offset = 0) = 0;
 		virtual void BindDescriptorSet(Pipeline* pipeline, DescriptorSet* descriptor, u32 binding, u32 set) = 0;
 	};
 }

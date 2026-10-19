@@ -92,11 +92,12 @@ namespace Tourqe::Engine {
 					RHI::DescriptorSet* bindlessSet = renderSystem->GetContext()->GetBindlessDescriptorSet();
 					RHI::DescriptorSet* globalSet = renderSystem->GetContext()->GetGlobalDescriptorSet();
 
-					_forwardPassPipeline->Bind(cmd);
-					_forwardPassPipeline->PushConstant(cmd, &pc, sizeof(SpritePushConstant));
+					cmd->BindPipeline(_forwardPassPipeline);
+					cmd->PushConstant(_forwardPassPipeline, &pc, sizeof(SpritePushConstant));
 					cmd->BindDescriptorSet(_forwardPassPipeline, bindlessSet, 0, 1);
 					cmd->BindDescriptorSet(_forwardPassPipeline, globalSet, 0, 0);
 					cmd->DrawVertex(6);
+
 					cmd->EndDynamicRendering();
 				});
 

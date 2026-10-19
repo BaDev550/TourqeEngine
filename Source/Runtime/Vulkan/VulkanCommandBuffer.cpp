@@ -144,6 +144,16 @@ namespace Runtime::RHI {
 		vkCmdDraw(_commandBuffer, count, 1, 0, 0);
 	}
 
+	void VulkanCommandBuffer::BindPipeline(Pipeline* pipeline) {
+		VulkanPipeline* vkPipeline = static_cast<VulkanPipeline*>(pipeline);
+		vkCmdBindPipeline(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline->GetVkPipeline());
+	}
+
+	void VulkanCommandBuffer::PushConstant(Pipeline * pipeline, void* data, usize size, usize offset) {
+		VulkanPipeline* vkPipeline = static_cast<VulkanPipeline*>(pipeline);
+		vkCmdPushConstants(_commandBuffer, vkPipeline->GetVkLayout(), VK_SHADER_STAGE_ALL, offset, size, data);
+	}
+
 	void VulkanCommandBuffer::BindDescriptorSet(Pipeline* pipeline, DescriptorSet* descriptor, u32 binding, u32 set)
 	{
 		VulkanDescriptorSet* vkDescriptor = static_cast<VulkanDescriptorSet*>(descriptor);

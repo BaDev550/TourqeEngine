@@ -9,9 +9,6 @@ namespace Runtime::RHI {
 		VulkanPipeline(Context* context, const PipelineDesc& desc);
 		virtual ~VulkanPipeline();
 
-		virtual void Bind(CommandBuffer* cmd) override;
-		virtual void PushConstant(CommandBuffer* cmd, void* data, usize size, usize offset = 0) override;
-
 		[[nodiscard]] virtual const PipelineDesc& GetDesc() const override { return _desc; }
 		[[nodiscard]] VkPipeline GetVkPipeline() const { return _pipeline; }
 		[[nodiscard]] VkPipelineLayout GetVkLayout() const { return _layout; }

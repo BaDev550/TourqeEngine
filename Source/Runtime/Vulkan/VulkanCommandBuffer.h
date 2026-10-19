@@ -22,6 +22,9 @@ namespace Runtime::RHI {
 		virtual void CopyBufferToImage(Buffer* buffer, Image* image, ImageLayout layout, u32 width, u32 height) override;
 
 		virtual void DrawVertex(u32 count) override;
+
+		virtual void BindPipeline(Pipeline* pipeline) override;
+		virtual void PushConstant(Pipeline* pipeline, void* data, usize size, usize offset = 0) override;
 		virtual void BindDescriptorSet(Pipeline* pipeline, DescriptorSet* descriptor, u32 binding, u32 set) override;
 
 		[[nodiscard]] VkCommandBuffer GetVkCommandBuffer() const { return _commandBuffer; }
