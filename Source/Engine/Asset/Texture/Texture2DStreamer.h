@@ -23,9 +23,9 @@ namespace Tourqe::Engine {
         virtual void endImage() override {}
     };
 
-    TCLASS()
+    TCLASS();
 	class Texture2DStreamer final : public AssetStreamer {
-        GENERATE_CLASS(Texture2DStreamer)
+        GENERATE_CLASS(Texture2DStreamer);
 	public:
 		virtual Runtime::Result Cook(AssetSource& source) override;
         virtual Asset* Import(AssetSource& source) override;

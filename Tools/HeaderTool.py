@@ -33,7 +33,7 @@ def strip_noise(text: str) -> str:
 
 
 _CLASS = (
-    r"(?P<cc>\b" + CLASS_MACRO + r"\s*\([^)]*\)\s*(?P<kw>class|struct)\s+"
+    r"(?P<cc>\b" + CLASS_MACRO + r"\s*\([^)]*\);\s*(?P<kw>class|struct)\s+"
     r"(?:\[\[[^\]]*\]\]\s*)*"
     r"(?:[A-Z0-9_]*(?:API|EXPORT)[A-Z0-9_]*\s+)?"
     r"(?P<name>[A-Za-z_]\w*)\s*(?:final\s*)?"

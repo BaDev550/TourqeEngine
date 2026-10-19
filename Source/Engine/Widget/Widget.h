@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/Core/Core.h>
 #include <Runtime/Reflection/ReflectObject.h>
 #include <Runtime/Reflection/Macros.h>
 

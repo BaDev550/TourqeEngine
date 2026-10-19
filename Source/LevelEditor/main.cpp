@@ -2,6 +2,7 @@
 
 #include <Engine/Renderer/RenderSubsystem.h>
 #include <Engine/Window/WindowSubsystem.h>
+#include <Engine/Widget/WidgetSubsystem.h>
 #include <Engine/Asset/AssetSubsystem.h>
 #include <Engine/World/WorldSubsystem.h>
 
@@ -14,6 +15,7 @@ int main() {
 		engine.AddSubsystem<Tourqe::Engine::AssetSubsystem>();
 		engine.AddSubsystem<Tourqe::Engine::RenderSubsystem>();
 		engine.AddSubsystem<Tourqe::Engine::WorldSubsystem>();
+		engine.AddSubsystem<Tourqe::Engine::WidgetSubsystem>();
 		engine.AddSubsystem<LevelEditor>();
 		engine.Run();
 	}

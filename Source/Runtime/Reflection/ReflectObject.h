@@ -5,7 +5,7 @@
 #include <string_view>
 
 namespace Runtime::Reflection {
-	class ENGINE_API ReflectObject {
+	class ReflectObject {
 	public:
 		virtual std::string_view GetClassName() = 0;
 	};

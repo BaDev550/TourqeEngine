@@ -116,13 +116,6 @@ namespace Tourqe::Engine {
 	}
 
 	void RenderSubsystem::OnUpdate() {
-		_imguiContext->Begin();
-		ImGui::NewFrame();
-
-		ImGui::ShowDemoWindow();
-
-		ImGui::Render();
-
 		RHI::CommandBuffer* cmd = BeginFrame();
 		if (!cmd) return;
 

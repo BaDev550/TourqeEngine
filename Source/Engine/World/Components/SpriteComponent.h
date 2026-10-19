@@ -4,9 +4,9 @@
 #include <Runtime/Definitions/UUID.h>
 
 namespace Tourqe::Engine {
-	TCLASS()
+	TCLASS();
 	class SpriteComponent : public BaseComponent {
-		GENERATE_CLASS(SpriteComponent)
+		GENERATE_CLASS(SpriteComponent);
 	public:
 		TPROP()
 		Runtime::UUID TextureAssetHandle;

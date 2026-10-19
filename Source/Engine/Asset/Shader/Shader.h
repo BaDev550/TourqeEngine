@@ -3,9 +3,9 @@
 #include <Runtime/RHI/Shader/ShaderDesc.h>
 
 namespace Tourqe::Engine {
-	TCLASS()
+	TCLASS();
 	class ENGINE_API Shader final : public Asset {
-		GENERATE_CLASS(Shader)
+		GENERATE_CLASS(Shader);
 	public:
 		Shader() = default;
 		Shader(const Runtime::RHI::ShaderDesc& desc) : _desc(desc) {};

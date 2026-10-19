@@ -7,7 +7,13 @@ find_package(Vulkan REQUIRED)
 find_package(unofficial-shaderc CONFIG REQUIRED)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 
-target_compile_definitions(Runtime PRIVATE ENGINE_EXPORTS)
+target_compile_definitions(Runtime 
+    PRIVATE 
+        ENGINE_EXPORTS
+        "RUNTIME_API=__declspec(dllexport)"
+    INTERFACE
+        "RUNTIME_API=__declspec(dllimport)"
+)
 target_include_directories(Runtime PUBLIC "${CMAKE_SOURCE_DIR}/Source")
 target_link_libraries(Runtime 
     PUBLIC 

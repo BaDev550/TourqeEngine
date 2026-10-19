@@ -890,6 +890,7 @@ namespace Runtime::RHI {
 			else {
 				Logger::Info("RHIContextVulkan", "Successfully created Vulkan surface.");
 			}
+			break;
 		}
 		case PAL::Platform::Linux: {
 			Logger::Warn("RHIContextVulkan", "No Linux support at time");

@@ -6,9 +6,9 @@
 #include <shaderc/shaderc.hpp>
 
 namespace Tourqe::Engine {
-	TCLASS()
+	TCLASS();
     class ShaderStreamer final : public AssetStreamer {
-		GENERATE_CLASS(ShaderStreamer)
+		GENERATE_CLASS(ShaderStreamer);
     public:
         static constexpr std::string_view ShaderCacheFileDir = "ShaderCache";
 

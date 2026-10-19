@@ -4,7 +4,7 @@
 #include <Runtime/RHI/Image/RHIImage.h>
 
 namespace Tourqe::Engine {
-	TCLASS()
+	TCLASS();
 	class ENGINE_API Texture2D final : public Asset { // TEMP CLASS
 		GENERATE_CLASS(Texture2D);
 	public:

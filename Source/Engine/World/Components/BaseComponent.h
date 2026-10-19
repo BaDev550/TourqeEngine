@@ -4,9 +4,9 @@
 #include <Runtime/Reflection/ReflectObject.h>
 
 namespace Tourqe::Engine {
-	TCLASS()
+	TCLASS();
 	class BaseComponent : public Runtime::Reflection::ReflectObject {
-		GENERATE_CLASS(BaseComponent)
+		GENERATE_CLASS(BaseComponent);
 	public:
 		BaseComponent() = default;
 		virtual ~BaseComponent() = default;

@@ -8,9 +8,9 @@
 namespace Tourqe::Engine {
 	class Asset;
 
-	TCLASS()
-	class ENGINE_API AssetStreamer : public Runtime::Reflection::ReflectObject {
-		GENERATE_CLASS(AssetStreamer)
+	TCLASS();
+	class AssetStreamer : public Runtime::Reflection::ReflectObject {
+		GENERATE_CLASS(AssetStreamer);
 	public:
 		virtual ~AssetStreamer() = default;
 

@@ -16,9 +16,9 @@ namespace Tourqe::Engine {
 		u64 dataSize = 0;
 	};
 
-	TCLASS()
+	TCLASS();
 	class ENGINE_API Asset : public Runtime::Reflection::ReflectObject {
-		GENERATE_CLASS(Asset)
+		GENERATE_CLASS(Asset);
 	public:
 		Asset() = default;
 		virtual ~Asset() = default;
