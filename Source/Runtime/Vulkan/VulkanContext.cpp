@@ -10,6 +10,8 @@
 #include <Runtime/Vulkan/VulkanBuffer.h>
 #include <Runtime/Vulkan/VulkanPipeline.h>
 #include <Runtime/Vulkan/VulkanImGuiContext.h>
+#include <Runtime/Vulkan/VulkanDescriptorHeap.h>
+#include <Runtime/Vulkan/VulkanDescriptorSet.h>
 
 #define VMA_IMPLEMENTATION
 #include <vma/vk_mem_alloc.h>
@@ -77,8 +79,7 @@ namespace Runtime::RHI {
 			CreateDevice();
 			CreateVMA();
 			CreateSamplers();
-			CreateBindless();
-			CreateGlobalDescriptors();
+			CreateDescriptors();
 		}
 		catch (const std::runtime_error& err) {
 			Logger::Assert(false, "RHIContextVulkan", "{}", err.what());
@@ -94,14 +95,11 @@ namespace Runtime::RHI {
 			vkDestroySampler(_device, sampler, nullptr);
 		}
 
-		vkFreeDescriptorSets(_device, _bindlessDescriptorPool, 1, &_globalSamplerSet);
-		vkFreeDescriptorSets(_device, _bindlessDescriptorPool, 1, &_bindlessDescriptorSet);
-
-		vkDestroyDescriptorSetLayout(_device, _bindlessDescriptorLayout, nullptr);
-		vkDestroyDescriptorSetLayout(_device, _globalSamplerLayout, nullptr);
-		vkDestroyDescriptorPool(_device, _bindlessDescriptorPool, nullptr);
-
+		if (_bindlessSet) Mem::Allocator::Destroy(_bindlessSet);
+		if (_globalSamplerSet) Mem::Allocator::Destroy(_globalSamplerSet);
+		if (_descriptorHeap) Mem::Allocator::Destroy(_descriptorHeap);
 		if (_graphicsAndPresentQueue) Mem::Allocator::Destroy(_graphicsAndPresentQueue);
+
 		if (_allocator) vmaDestroyAllocator(_allocator);
 		if (_device) vkDestroyDevice(_device, nullptr);
 		if (_surface) vkDestroySurfaceKHR(_instance, _surface, nullptr);
@@ -287,7 +285,10 @@ namespace Runtime::RHI {
 				pcRanges.push_back(range);
 			}
 
-			std::vector<VkDescriptorSetLayout> layouts{ _globalSamplerLayout, _bindlessDescriptorLayout };
+			VulkanDescriptorSet* vkBindlessSet = static_cast<VulkanDescriptorSet*>(_bindlessSet);
+			VulkanDescriptorSet* vkGlobalSet = static_cast<VulkanDescriptorSet*>(_globalSamplerSet);
+
+			std::vector<VkDescriptorSetLayout> layouts{ vkGlobalSet->GetOwningLayout(), vkBindlessSet->GetOwningLayout() }; // add reflection
 			VkPipelineLayoutCreateInfo layoutCreateInfo{};
 			layoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 			layoutCreateInfo.setLayoutCount = static_cast<u32>(layouts.size());
@@ -573,47 +574,52 @@ namespace Runtime::RHI {
 		vkImage->_layout = newLayout;
 	}
 
+
+	DescriptorHeap* VulkanContext::CreateDescriptorHeap(const DescriptorHeapDesc& desc) {
+		VulkanDescriptorHeap* vkDescriptorHeap = Mem::Allocator::Construct<VulkanDescriptorHeap>(this, desc);
+		
+		std::vector<VkDescriptorPoolSize> vkPoolSize;
+
+		for (usize i = 0; i < desc.sizes.size(); i++) {
+			auto& size = desc.sizes[i];
+
+			VkDescriptorPoolSize vkSize{};
+			vkSize.type = Utils::GetVkDescriptorType(size.type);
+			vkSize.descriptorCount = size.count;
+
+			vkPoolSize.push_back(std::move(vkSize));
+		}
+
+		VkDescriptorPoolCreateInfo poolInfo{};
+		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.flags = Utils::GetVkDescriptorHeapCreateFlags(desc.flags);
+		poolInfo.maxSets = desc.maxDescriptorSetAllocation;
+		poolInfo.poolSizeCount = static_cast<u32>(vkPoolSize.size());
+		poolInfo.pPoolSizes = vkPoolSize.data();
+
+		Logger::Assert((vkCreateDescriptorPool(_device, &poolInfo, nullptr, &vkDescriptorHeap->_pool) == VK_SUCCESS),
+			"RHIContextVulkan", "Failed to create descriptor pool");
+
+		return vkDescriptorHeap;
+	}
+
 	u32 VulkanContext::RegisterBindlessImage(Image* image) {
 		u32 index = static_cast<u32>(_bindlessImages.size());
-		VulkanImage* vkImage = static_cast<VulkanImage*>(image);
-
-		VkDescriptorImageInfo imageInfo{};
-		imageInfo.imageView = vkImage->_imageView;
-		imageInfo.imageLayout = Utils::GetVkImageLayout(vkImage->_layout);
-
-		VkWriteDescriptorSet write{};
-		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		write.dstSet = _bindlessDescriptorSet;
-		write.dstBinding = 0;
-		write.dstArrayElement = index;
-		write.descriptorCount = 1;
-		write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-		write.pImageInfo = &imageInfo;
-
-		vkUpdateDescriptorSets(_device, 1, &write, 0, nullptr);
+		_bindlessSet->WriteImage(
+			0,
+			index,
+			DescriptorType::SampledImage,
+			image
+		);
 		_bindlessImages.push_back(image);
 		return index;
 	}
 
 	void VulkanContext::UnregisterBindlessImage(Image* image)
 	{
-		VulkanImage* vkImage = static_cast<VulkanImage*>(image);
-		VulkanImage* defaultVkImage = static_cast<VulkanImage*>(_bindlessImages[0]);
-
-		VkDescriptorImageInfo imageInfo{};
-		imageInfo.imageView = defaultVkImage->_imageView;
-		imageInfo.imageLayout = Utils::GetVkImageLayout(defaultVkImage->_layout);
-
-		VkWriteDescriptorSet write{};
-		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		write.dstSet = _bindlessDescriptorSet;
-		write.dstBinding = 0;
-		write.dstArrayElement = image->GetBindlessIndex();
-		write.descriptorCount = 1;
-		write.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-		write.pImageInfo = &imageInfo;
-
-		vkUpdateDescriptorSets(_device, 1, &write, 0, nullptr);
+		_bindlessSet->WriteImage(0, image->GetBindlessIndex(), DescriptorType::SampledImage, _fallbackImage);
+		auto it = std::find(_bindlessImages.begin(), _bindlessImages.end(), image);
+		_bindlessImages.erase(it);
 	}
 
 	u32 VulkanContext::GetSamplerId(StaticSampler sampler) {
@@ -736,69 +742,67 @@ namespace Runtime::RHI {
 		_samplers[GetSamplerId(StaticSampler::ShadowCompare)] = makeSampler(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, VK_SAMPLER_MIPMAP_MODE_LINEAR, false, true);
 	}
 
-	void VulkanContext::CreateGlobalDescriptors()
-	{
-		VkDescriptorSetLayoutBinding samplerBinding{};
-		samplerBinding.binding = 0;
-		samplerBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-		samplerBinding.descriptorCount = 100;
-		samplerBinding.stageFlags = VK_SHADER_STAGE_ALL;
+	void VulkanContext::CreateDescriptors() {
+		std::vector<DescriptorBindingDesc> bindlessBindings;
+		std::vector<DescriptorBindingDesc> globalBindings;
+		{
+			DescriptorBindingDesc binding0;
+			binding0.count = 1000;
+			binding0.flags = DescriptorBindingFlags::PartiallyBound | RHI::DescriptorBindingFlags::UpdateAfterBind;
+			binding0.type = DescriptorType::SampledImage;
+			binding0.stage = ShaderStage::All;
+			bindlessBindings.push_back(std::move(binding0));
 
-		VkDescriptorBindingFlags samplerBindingFlags = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
-		VkDescriptorSetLayoutBindingFlagsCreateInfo samplerBindingFlagsInfo{};
-		samplerBindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-		samplerBindingFlagsInfo.bindingCount = 1;
-		samplerBindingFlagsInfo.pBindingFlags = &samplerBindingFlags;
+			DescriptorBindingDesc binding1;
+			binding1.count = 1000;
+			binding1.flags = DescriptorBindingFlags::PartiallyBound | RHI::DescriptorBindingFlags::UpdateAfterBind;
+			binding1.type = DescriptorType::StorageBuffer;
+			binding1.stage = ShaderStage::All;
+			bindlessBindings.push_back(std::move(binding1));
 
-		VkDescriptorSetLayoutCreateInfo samplerLayoutInfo{};
-		samplerLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		samplerLayoutInfo.pNext = &samplerBindingFlagsInfo;
-		samplerLayoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
-		samplerLayoutInfo.bindingCount = 1;
-		samplerLayoutInfo.pBindings = &samplerBinding;
-		VkResult result = vkCreateDescriptorSetLayout(
-			_device,
-			&samplerLayoutInfo,
-			nullptr,
-			&_globalSamplerLayout
-		);
+			DescriptorBindingDesc binding2;
+			binding2.count = 100;
+			binding2.flags = DescriptorBindingFlags::PartiallyBound | RHI::DescriptorBindingFlags::UpdateAfterBind;
+			binding2.type = DescriptorType::Sampler;
+			binding2.stage = ShaderStage::Fragment;
+			globalBindings.push_back(std::move(binding2));
+		}
 
-		Logger::Assert(result == VK_SUCCESS, "RHIContextVulkan", "Failed to create global sampler layout");
+		std::vector<DescriptorHeapSize> sizes = {
+			{ DescriptorType::SampledImage, 1000 }, 
+			{ DescriptorType::StorageBuffer, 1000 },
+			{ DescriptorType::Sampler, 100 }
+		};
 
-		VkDescriptorSetAllocateInfo samplerAllocInfo{};
-		samplerAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		samplerAllocInfo.descriptorPool = _bindlessDescriptorPool;
-		samplerAllocInfo.descriptorSetCount = 1;
-		samplerAllocInfo.pSetLayouts = &_globalSamplerLayout;
+		DescriptorHeapDesc createInfo{};
+		createInfo.sizes = std::move(sizes);
+		createInfo.maxDescriptorSetAllocation = 1000;
+		createInfo.flags = DescriptorHeapCreateFlags::UpdateAfterBind | DescriptorHeapCreateFlags::FreeDescriptorSet;
+		_descriptorHeap = CreateDescriptorHeap(createInfo);
 
-		result = vkAllocateDescriptorSets(
-			_device,
-			&samplerAllocInfo,
-			&_globalSamplerSet
-		);
+		DescriptorSetAllocInfo bindlessAllocInfo{};
+		bindlessAllocInfo.bindings = bindlessBindings;
+		_bindlessSet = _descriptorHeap->AllocDescriptorSet(std::move(bindlessAllocInfo));
 
-		Logger::Assert(
-			result == VK_SUCCESS,
-			"RHIContextVulkan",
-			"Failed to allocate sampler descriptor set"
-		);
+		DescriptorSetAllocInfo globalAllocInfo{};
+		globalAllocInfo.bindings = globalBindings;
+		_globalSamplerSet = _descriptorHeap->AllocDescriptorSet(std::move(globalAllocInfo));
 
+		VulkanDescriptorSet* vkGlobalSet = static_cast<VulkanDescriptorSet*>(_globalSamplerSet);
 		std::vector<VkDescriptorImageInfo> samplerInfos;
 		std::vector<VkWriteDescriptorSet> samplerWrites;
 		samplerInfos.reserve(_samplers.size());
 		samplerWrites.reserve(_samplers.size());
 
 		u32 samplerIndex = 0;
-
 		for (const auto& sampler : _samplers) {
 			VkDescriptorImageInfo info{};
 			info.sampler = sampler;
-
 			samplerInfos.push_back(info);
 
 			VkWriteDescriptorSet write{};
 			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			write.dstSet = _globalSamplerSet;
+			write.dstSet = vkGlobalSet->GetDescriptorSet();
 			write.dstBinding = 0;
 			write.dstArrayElement = samplerIndex;
 			write.descriptorCount = 1;
@@ -809,7 +813,7 @@ namespace Runtime::RHI {
 
 			++samplerIndex;
 		}
-
+		
 		vkUpdateDescriptorSets(
 			_device,
 			static_cast<u32>(samplerWrites.size()),
@@ -817,68 +821,6 @@ namespace Runtime::RHI {
 			0,
 			nullptr
 		);
-	}
-
-	void VulkanContext::CreateBindless() {
-		VkDescriptorPoolSize size[] = {
-			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_SAMPLER, 100 }
-		};
-
-		VkDescriptorPoolCreateInfo poolInfo{};
-		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-		poolInfo.maxSets = 1000;
-		poolInfo.poolSizeCount = static_cast<u32>(std::size(size));
-		poolInfo.pPoolSizes = size;
-
-		VkResult result = vkCreateDescriptorPool(_device, &poolInfo, nullptr, &_bindlessDescriptorPool);
-		Logger::Assert(result == VK_SUCCESS, "RHIContextVulkan", "Failed to create bindless descriptor pool");
-
-		VkDescriptorSetLayoutBinding textureBinding{};
-		textureBinding.binding = 0;
-		textureBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-		textureBinding.descriptorCount = 1000;
-		textureBinding.stageFlags = VK_SHADER_STAGE_ALL;
-
-		VkDescriptorSetLayoutBinding bufferBinding{};
-		bufferBinding.binding = 1;
-		bufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		bufferBinding.descriptorCount = 1000;
-		bufferBinding.stageFlags = VK_SHADER_STAGE_ALL;
-
-		VkDescriptorSetLayoutBinding bindings[] = { textureBinding, bufferBinding };
-		VkDescriptorBindingFlags bindingFlags[] = {
-			VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT,
-			VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT
-		};
-
-		VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
-		bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-		bindingFlagsInfo.bindingCount = static_cast<u32>(std::size(bindingFlags));
-		bindingFlagsInfo.pBindingFlags = bindingFlags;
-
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.pNext = &bindingFlagsInfo;
-		layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
-		layoutInfo.bindingCount = static_cast<u32>(std::size(bindings));
-		layoutInfo.pBindings = bindings;
-
-		result = vkCreateDescriptorSetLayout(_device, &layoutInfo, nullptr, &_bindlessDescriptorLayout);
-		Logger::Assert(result == VK_SUCCESS, "RHIContextVulkan", "Failed to create bindless descriptor set layout");
-
-		VkDescriptorSetAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = _bindlessDescriptorPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &_bindlessDescriptorLayout;
-
-		result = vkAllocateDescriptorSets(_device, &allocInfo, &_bindlessDescriptorSet);
-		Logger::Assert(result == VK_SUCCESS, "RHIContextVulkan", "Failed to allocate bindless descriptor set");
-
-		Logger::Info("RHIContextVulkan", "Bindless descriptor pool and layouts created successfully");
 	}
 
 	void VulkanContext::CreateDevice() {

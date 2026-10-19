@@ -5,17 +5,7 @@
 namespace Runtime::RHI {
 	class Context;
 
-	class NonCopyableObject {
-	protected:
-		NonCopyableObject() = default;
-		~NonCopyableObject() = default;
-		NonCopyableObject(const NonCopyableObject&) = delete;
-		NonCopyableObject& operator=(const NonCopyableObject&) = delete;
-		NonCopyableObject(NonCopyableObject&&) = delete;
-		NonCopyableObject& operator=(NonCopyableObject&&) = delete;
-	};
-
-	class Object : public NonCopyableObject {
+	class Object {
 	public:
 		Object(Context* context) : _context(context) {}
 		virtual ~Object() = default;
@@ -27,6 +17,6 @@ namespace Runtime::RHI {
 		inline T* GetOwningRHIContext() { return static_cast<T*>(_context); }
 
 		Context* _context = nullptr;
-		std::string_view _debugName;
+		std::string_view _debugName = "";
 	};
 }

@@ -44,10 +44,13 @@ namespace Tourqe::Engine {
 
 		BEGIN_SCOPE(RHIInitilization)
 		_context = RHI::CreateContext(contextDesc);
-		if (!_context) 
-			return Result("Failed to create context");
+		if (!_context) return Result("Failed to create context");
 		
 		_swapchain = _context->CreateSwapchain(swapchainDesc);
+		if (!_swapchain) return Result("Failed to create swapchain");
+
+		_imguiContext = _context->CreateImGuiContext();
+		if (!_imguiContext) return Result("Failed to create imgui context");
 
 		{
 			for (auto& fd : _frames) {
@@ -102,11 +105,10 @@ namespace Tourqe::Engine {
 				cmd->TransitionImageLayout(_defaultWhiteImage, RHI::ImageLayout::TransferDst);
 				cmd->CopyBufferToImage(stagingBuffer, _defaultWhiteImage, RHI::ImageLayout::TransferDst, imageDesc.width, imageDesc.height);
 				cmd->TransitionImageLayout(_defaultWhiteImage, RHI::ImageLayout::ShaderReadOnly);
-				_defaultWhiteImage->GetBindlessIndex();
 				});
-		}
 
-		_imguiContext = _context->CreateImGuiContext();
+			_context->SetFallbackImage(_defaultWhiteImage);
+		}
 
 		END_SCOPE(RHIInitilization)
 

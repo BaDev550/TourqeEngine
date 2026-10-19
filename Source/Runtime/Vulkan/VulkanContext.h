@@ -29,8 +29,13 @@ namespace Runtime::RHI {
 		virtual Fence* CreateFence(const FenceDesc& desc) override;
 		virtual Pipeline* CreatePipeline(const PipelineDesc& desc) override;
 		virtual ImGuiContext* CreateImGuiContext() override;
-		virtual Queue* GetGraphicsQueue() { return _graphicsAndPresentQueue; }
+		virtual DescriptorHeap* CreateDescriptorHeap(const DescriptorHeapDesc& desc) override;
+
+		virtual void SetFallbackImage(RHI::Image* image) override { _fallbackImage = image; }
+		virtual Queue* GetGraphicsQueue() override { return _graphicsAndPresentQueue; }
 		virtual ContextDesc* GetDesc() override;
+		virtual DescriptorSet* GetBindlessDescriptorSet() override { return _bindlessSet; }
+		virtual DescriptorSet* GetGlobalDescriptorSet() override { return _globalSamplerSet; }
 
 		void SetObjectDebugName(VkDebugUtilsObjectNameInfoEXT* info);
 		void BeginDebugLabel(VkCommandBuffer cmd, VkDebugUtilsLabelEXT* label);
@@ -38,6 +43,7 @@ namespace Runtime::RHI {
 		void CopyBufferToImage(VkCommandBuffer cmd, VkBuffer buffer, VkImage image, VkImageLayout layout, uint32_t width, uint32_t height); // TODO(0x): move this into commands
 		void CopyBuffer(VkCommandBuffer cmd, size_t size, VkBuffer srcBuffer, VkBuffer dstBuffer);
 		void TransitionImageLayout(VkCommandBuffer cmd, Image* image, ImageLayout newLayout);
+
 		u32 RegisterBindlessImage(Image* image);
 		void UnregisterBindlessImage(Image* image);
 		u32 GetSamplerId(StaticSampler sampler);
@@ -50,8 +56,6 @@ namespace Runtime::RHI {
 		[[nodiscard]] VkSurfaceKHR GetSurface() const { return _surface; }
 		[[nodiscard]] VmaAllocator GetAllocator() const { return _allocator; }
 		[[nodiscard]] VkAllocationCallbacks GetAllocationCallbacks() const { return _allocationCallbacks; }
-		[[nodiscard]] VkDescriptorSet GetBindlessDescriptorSet() const { return _bindlessDescriptorSet; }
-		[[nodiscard]] VkDescriptorSet GetGlobalSamplerSet() const { return _globalSamplerSet; }
 		[[nodiscard]] VkSampler GetSampler(StaticSampler sampler);
 	protected:
 		void CreateInstance();
@@ -59,8 +63,7 @@ namespace Runtime::RHI {
 		void CreateSurface();
 		void PickPhysicalDevice();
 		void CreateSamplers();
-		void CreateGlobalDescriptors();
-		void CreateBindless();
+		void CreateDescriptors();
 		void CreateDevice();
 
 		std::vector<const char*> GetRequiredExtensions();
@@ -80,16 +83,14 @@ namespace Runtime::RHI {
 		VmaAllocator _allocator;
 		VkAllocationCallbacks _allocationCallbacks;
 
-		VkDescriptorSetLayout _bindlessDescriptorLayout;
-		VkDescriptorPool _bindlessDescriptorPool;
-		VkDescriptorSet _bindlessDescriptorSet;
-
-		VkDescriptorSetLayout _globalSamplerLayout;
-		VkDescriptorSet _globalSamplerSet;
-
+		Image* _fallbackImage = nullptr;
 		std::vector<Image*> _bindlessImages;
 		std::vector<Buffer*> _bindlessBuffers;
 		std::array<VkSampler, (usize)StaticSampler::COUNT> _samplers;
+
+		DescriptorHeap* _descriptorHeap = nullptr;
+		DescriptorSet* _bindlessSet = nullptr;
+		DescriptorSet* _globalSamplerSet = nullptr;
 
 		std::vector<const char*> _extensions;
 		std::vector<const char*> _layers;

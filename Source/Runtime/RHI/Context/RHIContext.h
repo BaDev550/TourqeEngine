@@ -13,6 +13,8 @@ namespace Runtime::RHI {
 	class Queue;
 	class Fence;
 	class Pipeline;
+	class DescriptorHeap;
+	class DescriptorSet;
 	class ImGuiContext;
 
 	struct ImageDesc;
@@ -23,6 +25,7 @@ namespace Runtime::RHI {
 	struct QueueDesc;
 	struct FenceDesc;
 	struct PipelineDesc;
+	struct DescriptorHeapDesc;
 
 	class Context {
 	public:
@@ -39,10 +42,14 @@ namespace Runtime::RHI {
 		virtual Queue* CreateQueue(const QueueDesc& desc) = 0;
 		virtual Fence* CreateFence(const FenceDesc& desc) = 0;
 		virtual Pipeline* CreatePipeline(const PipelineDesc& desc) = 0;
+		virtual DescriptorHeap* CreateDescriptorHeap(const DescriptorHeapDesc& desc) = 0;
 		virtual ImGuiContext* CreateImGuiContext() = 0;
 
+		virtual void SetFallbackImage(RHI::Image* image) = 0;
 		virtual Queue* GetGraphicsQueue() = 0;
 		virtual ContextDesc* GetDesc() = 0;
+		virtual DescriptorSet* GetBindlessDescriptorSet() = 0;
+		virtual DescriptorSet* GetGlobalDescriptorSet() = 0;
 	};
 
 	Context* CreateContext(const ContextDesc& desc);

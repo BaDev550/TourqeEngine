@@ -7,7 +7,9 @@
 #include <Runtime/RHI/Command/RHICommandBufferDesc.h>
 #include <Runtime/RHI/Image/RHILoadOp.h>
 #include <Runtime/RHI/Shader/ShaderStage.h>
-#include <Runtime/RHI/Descriptor/DescriptorType.h>
+#include <Runtime/RHI/Descriptor/RHIDescriptorType.h>
+#include <Runtime/RHI/Descriptor/RHIDescriptorHeapDesc.h>
+#include <Runtime/RHI/Descriptor/RHIDescriptorBinding.h>
 
 #include <vulkan/vulkan.h>
 #include <vma/vk_mem_alloc.h>
@@ -175,5 +177,19 @@ namespace Runtime::RHI::Utils {
 			Logger::Error("Vulkan RHI Utils", "Unknowned descriptor type");
 			break;
 		}
+	}
+
+	constexpr [[nodiscard]] VkDescriptorBindingFlags GetVkDescriptorBindingFlags(DescriptorBindingFlags flags) {
+		VkDescriptorBindingFlags result{};
+		if ((flags & DescriptorBindingFlags::PartiallyBound) != DescriptorBindingFlags::None) result |= VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+		if ((flags & DescriptorBindingFlags::UpdateAfterBind) != DescriptorBindingFlags::None) result |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+		return result;
+	}
+
+	constexpr [[nodiscard]] VkDescriptorPoolCreateFlags GetVkDescriptorHeapCreateFlags(DescriptorHeapCreateFlags flags) {
+		VkDescriptorPoolCreateFlags result{};
+		if ((flags & DescriptorHeapCreateFlags::UpdateAfterBind) != DescriptorHeapCreateFlags::None) result |= VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+		if ((flags & DescriptorHeapCreateFlags::FreeDescriptorSet) != DescriptorHeapCreateFlags::None) result |= VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+		return result;
 	}
 }

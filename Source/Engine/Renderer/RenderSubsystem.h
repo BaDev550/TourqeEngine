@@ -8,12 +8,15 @@
 #include <Runtime/RHI/Image/RHIImage.h>
 #include <Runtime/RHI/Buffer/RHIBuffer.h>
 #include <Runtime/RHI/Pipeline/RHIPipeline.h>
+#include <Runtime/RHI/ImGui/ImGuiContext.h>
 
 #include <Runtime/RHI/Command/RHICommandPool.h>
 #include <Runtime/RHI/Command/RHICommandBuffer.h>
 #include <Runtime/RHI/Sync/RHIFence.h>
 #include <Runtime/RHI/Queue/RHIQueue.h>
-#include <Runtime/RHI/ImGui/ImGuiContext.h>
+
+#include <Runtime/RHI/Descriptor/RHIDescriptorHeap.h>
+#include <Runtime/RHI/Descriptor/RHIDescriptorSet.h>
 
 namespace Tourqe::Engine {
 	using namespace Runtime;
@@ -24,11 +27,10 @@ namespace Tourqe::Engine {
 	class ENGINE_API RenderSubsystem final : public Subsystem {
 	public:
 		constexpr static u32 MaxFramesInFlight = 2;
-
+		
 		virtual Result OnCreate(Engine* engine) override;
 		virtual void OnUpdate() override;
 		virtual void OnDestroy() override;
-
 		virtual void GetDependencyGraph(DependencyGraph& graph) override;
 
 		RHI::CommandBuffer* BeginFrame();
@@ -40,11 +42,12 @@ namespace Tourqe::Engine {
 		void EndSwapchainPass();
 
 		b8 CanSubmitRenderCommands() const { return _canSubmitCommand; }
-		u32 GetImageIndex() const { return _imageIndex; }
+
 		RHI::Buffer* CreateStagingBuffer(usize dataSizeInBytes);
 
-		RenderGraph& GetRenderGraph() { return _graph; }
-
+		[[nodiscard]] RenderGraph& GetRenderGraph() { return _graph; }
+		[[nodiscard]] const u32 GetImageIndex() const { return _imageIndex; }
+		[[nodiscard]] RHI::Image* GetDefaultWhiteImage() const { return _defaultWhiteImage; }
 		[[nodiscard]] RHI::Context* GetContext() { return _context; }
 		[[nodiscard]] RHI::Swapchain* GetSwapchain() { return _swapchain; }
 		[[nodiscard]] RHI::ImGuiContext* GetImGuiContext() { return _imguiContext; }

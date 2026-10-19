@@ -9,6 +9,7 @@ namespace Runtime::RHI {
 	class Image;
 	class Buffer;
 	class Pipeline;
+	class DescriptorSet;
 
 	class CommandBuffer : public Object {
 	public:
@@ -26,6 +27,7 @@ namespace Runtime::RHI {
 		virtual void CopyBuffer(Buffer* srcBuffer, Buffer* dstBuffer, size_t size) = 0;
 		virtual void CopyBufferToImage(Buffer* buffer, Image* image, ImageLayout layout, u32 width, u32 height) = 0;
 
-		virtual void DrawVertex(Pipeline* pipeline, u32 count) = 0;
+		virtual void DrawVertex(u32 count) = 0;
+		virtual void BindDescriptorSet(Pipeline* pipeline, DescriptorSet* descriptor, u32 binding, u32 set) = 0;
 	};
 }

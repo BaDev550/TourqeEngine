@@ -4,6 +4,7 @@
 #include "VulkanBuffer.h"
 #include "VulkanPipeline.h"
 #include "VulkanUtils.h"
+#include "VulkanDescriptorSet.h"
 
 #include <imgui.h>
 #include <imgui_impl_vulkan.h>
@@ -137,35 +138,26 @@ namespace Runtime::RHI {
 		vkContext->CopyBufferToImage(_commandBuffer, vkBuffer->GetVkBuffer(), vkImage->GetImage(), vkLayout, width, height);
 	}
 
-	void VulkanCommandBuffer::DrawVertex(Pipeline* pipeline, u32 count)
+	void VulkanCommandBuffer::DrawVertex(u32 count)
 	{
 		VulkanContext* vkContext = GetOwningRHIContext<VulkanContext>();
-		VulkanPipeline* vkPipeline = static_cast<VulkanPipeline*>(pipeline);
-		VkDescriptorSet vkBindlessSet = vkContext->GetBindlessDescriptorSet();
-		VkDescriptorSet vkGlobalSet = vkContext->GetGlobalSamplerSet();
+		vkCmdDraw(_commandBuffer, count, 1, 0, 0);
+	}
 
-		vkCmdBindDescriptorSets( // tf
-			_commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			vkPipeline->GetVkLayout(),
-			0,
-			1,
-			&vkGlobalSet,
-			0,
-			nullptr
-		);
+	void VulkanCommandBuffer::BindDescriptorSet(Pipeline* pipeline, DescriptorSet* descriptor, u32 binding, u32 set)
+	{
+		VulkanDescriptorSet* vkDescriptor = static_cast<VulkanDescriptorSet*>(descriptor);
+		VulkanPipeline* vkPipeline = static_cast<VulkanPipeline*>(pipeline);
 
 		vkCmdBindDescriptorSets(
 			_commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			vkPipeline->GetVkLayout(),
+			set,
 			1,
-			1,
-			&vkBindlessSet,
+			&vkDescriptor->GetDescriptorSet(),
 			0,
 			nullptr
 		);
-
-		vkCmdDraw(_commandBuffer, count, 1, 0, 0);
 	}
 }
