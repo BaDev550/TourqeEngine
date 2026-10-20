@@ -1,25 +1,27 @@
 #pragma once
 
+#include <Runtime/Definitions/Types.h>
+#include <Engine/Renderer/RenderGraph/RenderPassResourceContainer.h>
 #include <Engine/Renderer/RenderGraph/RenderPass.h>
 
 namespace Tourqe::Engine {
+	using RenderPassAccess = std::pair<RenderPassState, i32>;
 	class RenderGraph final {
 	public:
-		using SetupFn = std::function<void(RenderPassBuilder&)>;
 		~RenderGraph();
 
-		RenderGraphHandle ImportImage(const std::string& name, Runtime::RHI::Image* img, Runtime::RHI::ImageLayout inital, Runtime::RHI::ImageLayout final);
-		RenderGraphHandle CreateImage(const std::string& name, const Runtime::RHI::ImageDesc& desc);
-		void AddPass(std::string name, SetupFn setup, RenderPassExecuteFn execute);
+		void RegisterPass(RenderPass* pass);
 
 		void Compile();
 		void ClearPasses();
 		void Execute(Runtime::RHI::CommandBuffer* cmd);
-	private:
-		void EmitBarrier(Runtime::RHI::CommandBuffer* cmd, const RenderPassBarrier& barrier);
 
+		[[nodiscard]] RHI::Image* GetImage(const std::string& name);
+	private:
 		std::vector<RenderPass*> _passes;
-		std::vector<RenderPassBarrier> _finalBarriers;
-		std::vector<RenderGraphResourceContainer::RenderGraphResource> _resources;
+		std::unordered_map<RenderPassState, i32> _passesLookupTable;
+
+		RenderPassResourceContainer _accessResourceContainer;
+		std::unordered_map<std::string, RenderPassAccess> _accessResourceLinkedPasses;
 	};
 }

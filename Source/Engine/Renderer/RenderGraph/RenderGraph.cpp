@@ -10,32 +10,24 @@ namespace Tourqe::Engine {
 		ClearPasses();
 	}
 
-	RenderGraphHandle RenderGraph::ImportImage(const std::string& name, Runtime::RHI::Image* img, Runtime::RHI::ImageLayout inital, Runtime::RHI::ImageLayout final) {
-		RenderGraphResourceContainer::RenderGraphResource resource{};
-		resource.name = std::move(name);
-		resource.state = AssetState::Loaded;
-		resource.physicalAttachment = img;
-		resource.initalState = inital;
-		resource.finalState = final;
-		u32 id = static_cast<u32>(_resources.size());
-		_resources.push_back(std::move(resource));
-		return { id };
-	}
+	void RenderGraph::RegisterPass(RenderPass* pass) {
+		if (!pass) {
+			Logger::Error("RenderGraph", "Failed to initialize render graph");
+			return;
+		}
+		auto renderState = pass->GetRenderState();
+		
+		u32 passIndex = static_cast<u32>(_passes.size());
 
-	RenderGraphHandle RenderGraph::CreateImage(const std::string& name, const Runtime::RHI::ImageDesc& desc) {
-		RenderGraphResourceContainer::RenderGraphResource resource{};
-		resource.name = std::move(name);
-		resource.desc = desc;
-		u32 id = static_cast<u32>(_resources.size());
-		_resources.push_back(std::move(resource));
-		return { id };
-	}
+		pass->RegisterResources(_accessResourceContainer);
+		for (usize i = 0; i < _accessResourceContainer.GetResources().size(); i++) {
+			auto& resource = container.GetResource(i);
 
-	void RenderGraph::AddPass(std::string name, SetupFn setup, RenderPassExecuteFn execute) {
-		RenderPass* pass = Runtime::Mem::Allocator::Construct<RenderPass>(std::move(name), std::move(execute));
-		RenderPassBuilder builder{ pass };
-		setup(builder);
-		_passes.push_back(std::move(pass));
+			_resourceLinkedPasses[resource] = { containerIndex, i };
+		}
+		_resourceContainers[std::move(container)] = { renderState, passIndex };
+
+		passes.push_back(std::move(pass));
 	}
 
 	void RenderGraph::Compile() {
