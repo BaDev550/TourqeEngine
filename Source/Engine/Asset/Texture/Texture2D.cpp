@@ -1,6 +1,6 @@
 #include "Texture2D.h"
 
-#include <Engine/Renderer/RenderSubsystem.h>
+#include <Engine/Graphics/GraphicsSubsystem.h>
 #include <Engine/Core/Engine.h>
 
 #include <Runtime/RHI/Buffer/RHIBuffer.h>
@@ -9,8 +9,8 @@
 
 namespace Tourqe::Engine {
     Texture2D::Texture2D(const Runtime::RHI::ImageDesc& desc) {
-        auto* renderSubsystem = Engine::Get()->GetSubsystem<RenderSubsystem>();
-        auto* rhi_context = renderSubsystem->GetContext();
+        auto* graphicsSubsystem = Engine::Get()->GetSubsystem<GraphicsSubsystem>();
+        auto* rhi_context = graphicsSubsystem->GetContext();
         
         _image = rhi_context->CreateImage(desc);
     }

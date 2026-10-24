@@ -1,8 +1,14 @@
 #include "LevelEditor.h"
 
 #include <Engine/Core/Engine.h>
-#include <Engine/Renderer/RenderSubsystem.h>
+#include <Engine/Graphics/GraphicsSubsystem.h>
 #include <Engine/World/WorldSubsystem.h>
+#include <Engine/Asset/AssetSubsystem.h>
+#include <Engine/Asset/Texture/Texture2D.h>
+#include <Engine/World/ECS/Scene.h>
+
+#include <Engine/World/Components/TransformComponent.h>
+#include <Engine/World/Components/SpriteComponent.h>
 
 #include <imgui.h>
 
@@ -10,16 +16,29 @@ using namespace Tourqe::Engine;
 
 Runtime::Result LevelEditor::OnCreate(Engine* engine) {
     Subsystem::OnCreate(engine);
-	auto renderSystem = _engine->GetSubsystem<RenderSubsystem>();
+	auto renderSystem = _engine->GetSubsystem<GraphicsSubsystem>();
+	auto worldSystem = _engine->GetSubsystem<WorldSubsystem>();
+	auto assetSystem = _engine->GetSubsystem<AssetSubsystem>();
 	auto context = renderSystem->GetContext();
 
 	//ImGui::SetCurrentContext(context->GetImGuiContext());
+	Texture2D* texture = assetSystem->Get<Texture2D>("dog-meme.png");
+
+	EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
+	TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
+	SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
+	tc->position = glm::vec3(0.0f, 0.0f, 0.0f);
+	tc->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+	tc->scale = glm::vec3(1.0f, 1.0f, 1.0f);
+
+	sc->TextureAssetHandle = texture->GetAssetHandle();
+	sc->Visible = true;
 
     return Runtime::Result();
 }
 
 void LevelEditor::OnUpdate() {
-	auto renderSystem = _engine->GetSubsystem<RenderSubsystem>();
+	auto renderSystem = _engine->GetSubsystem<GraphicsSubsystem>();
 	
 	//widgetRenderPass->Submit([this](Runtime::RHI::CommandBuffer* cmd) {
 	//	console.Draw();
@@ -31,7 +50,8 @@ void LevelEditor::OnDestroy() {
 }
 
 void LevelEditor::GetDependencyGraph(DependencyGraph & graph) {
-	graph.Require<RenderSubsystem>(DependencyOrder::After);
+	graph.Require<GraphicsSubsystem>(DependencyOrder::After);
+	graph.Require<WorldSubsystem>(DependencyOrder::After);
 }
 
 void Console::Draw() {

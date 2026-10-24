@@ -1,0 +1,17 @@
+#ifndef VERTEX_PULLING_GLSLH
+#define VERTEX_PULLING_GLSLH
+
+#include "core.glslh"
+
+struct Vertex { vec3 position; vec3 normal; vec2 uv; };
+const uint VERTEX_STRIDE = 8u;
+
+Vertex LoadVertex(uint bufferId, uint vertexIndex) {
+	uint base = vertexIndex * VERTEX_STRIDE;
+	Vertex v;
+	v.position = LoadVec3(bufferId, base);
+	v.normal   = LoadVec3(bufferId, base + 3u);
+	v.uv       = LoadVec2(bufferId, base + 6u);
+	return v;
+}
+#endif

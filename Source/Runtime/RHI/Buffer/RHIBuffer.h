@@ -19,5 +19,6 @@ namespace Runtime::RHI {
 		virtual const BufferUsage GetUsage() const = 0;
 		virtual const MemoryUsage GetMemoryUsage() const = 0;
 		virtual const u64 GetGPUAdress() = 0;
+		virtual const u32 GetBindlessIndex() = 0;
 	};
 }

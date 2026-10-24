@@ -5,7 +5,7 @@
 #include <bitset>
 
 namespace Tourqe::Engine {
-	static constexpr u32 MaxEntities = 2048;
+	static constexpr u32 EstimatedEntities = 2048;
 	static constexpr u32 MaxComponents = 256;
 	
 	struct EntityHandle {

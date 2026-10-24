@@ -622,6 +622,24 @@ namespace Runtime::RHI {
 		_bindlessImages.erase(it);
 	}
 
+	u32 VulkanContext::RegisterBindlessBuffer(Buffer* buffer)
+	{
+		u32 index = static_cast<u32>(_bindlessBuffers.size());
+		_bindlessSet->WriteBuffer(
+			1,
+			index,
+			DescriptorType::StorageBuffer,
+			buffer
+		);
+		_bindlessBuffers.push_back(buffer);
+		return index;
+	}
+
+	void VulkanContext::UnregisterBindlessBuffer(Buffer* buffer) {
+		auto it = std::find(_bindlessBuffers.begin(), _bindlessBuffers.end(), buffer);
+		_bindlessBuffers.erase(it);
+	}
+
 	u32 VulkanContext::GetSamplerId(StaticSampler sampler) {
 		return static_cast<u32>(sampler);
 	}

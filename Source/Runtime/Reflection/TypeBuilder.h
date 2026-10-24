@@ -24,6 +24,13 @@ namespace Runtime::Reflection {
 						::new (mem) T();
 						};
 				}
+
+				if constexpr (std::is_move_constructible_v<T>)
+				{
+					builder._type._moveFunc = [](void* pDestination, void* pSource) {
+							::new (pDestination) T(std::move(*static_cast<T*>(pSource)));
+						};
+				}
 			}
 			return builder;
 		}

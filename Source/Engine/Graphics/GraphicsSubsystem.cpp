@@ -1,25 +1,23 @@
-#include "RenderSubsystem.h"
+#include "GraphicsSubsystem.h"
 #include <Engine/Core/Engine.h>
 #include <Engine/Reflection/ReflectionSystem.h>
 #include <Engine/Window/WindowSubsystem.h>
 #include <Engine/Asset/AssetSubsystem.h>
 
 #include <Runtime/Definitions/Profiler.h>
-#include <Runtime/RHI/Command/RHICommandBufferDesc.h>
-#include <Runtime/RHI/Command/RHICommandPoolDesc.h>
-#include <Runtime/RHI/Sync/RHIFenceDesc.h>
-#include <Runtime/RHI/Queue/RHIQueue.h>
 
 #include <queue>
 
 #include <imgui.h>
 
 namespace Tourqe::Engine {
-	Result RenderSubsystem::OnCreate(Engine* engine) {
+	Result GraphicsSubsystem::OnCreate(Engine* engine) {
 		Subsystem::OnCreate(engine);
 
 		auto window = engine->GetSubsystem<WindowSubsystem>()->GetWindow();
 		if (!window) { return Result("Failed to find window"); }
+
+		BEGIN_SCOPE(RHIInitilization)
 
 		RHI::ContextDesc contextDesc{};
 #ifdef _DEBUG
@@ -36,21 +34,21 @@ namespace Tourqe::Engine {
 		contextDesc.platformDesc.windowHandle = window->GetHandle();
 		contextDesc.platformDesc.instance = window->GetInstance();
 		contextDesc.platformDesc.platform = window->GetPlatform();
-
+		_context = RHI::CreateContext(contextDesc);
+		if (!_context) 
+			return Result("Failed to create context");
+		
 		RHI::SwapchainDesc swapchainDesc{};
 		swapchainDesc.width = window->GetWidth();
 		swapchainDesc.height = window->GetHeight();
 		swapchainDesc.vsync = true;
-
-		BEGIN_SCOPE(RHIInitilization)
-		_context = RHI::CreateContext(contextDesc);
-		if (!_context) return Result("Failed to create context");
-		
 		_swapchain = _context->CreateSwapchain(swapchainDesc);
-		if (!_swapchain) return Result("Failed to create swapchain");
+		if (!_swapchain) 
+			return Result("Failed to create swapchain");
 
 		_imguiContext = _context->CreateImGuiContext();
-		if (!_imguiContext) return Result("Failed to create imgui context");
+		if (!_imguiContext) 
+			return Result("Failed to create imgui context");
 
 		{
 			for (auto& fd : _frames) {
@@ -115,66 +113,35 @@ namespace Tourqe::Engine {
 		return Result();
 	}
 
-	void RenderSubsystem::OnUpdate() {
+	void GraphicsSubsystem::OnUpdate() {
 		RHI::CommandBuffer* cmd = BeginFrame();
 		if (!cmd) return;
 
-		u32 width = (u32)GetSwapchain()->GetExtent().x;
-		u32 height = (u32)GetSwapchain()->GetExtent().y;
+		{
+			auto* backbuffer = GetSwapchain()->GetColorAttachments()[_imageIndex];
+			auto* depthbuffer = GetSwapchain()->GetDepthAttachment();
+			glm::vec2 extent = GetSwapchain()->GetExtent();
 
-		auto backbuffer = _graph.ImportImage(
-			"BackBuffer",
-			GetSwapchain()->GetColorAttachments()[_imageIndex],
-			Runtime::RHI::ImageLayout::Undefined,
-			Runtime::RHI::ImageLayout::PresentSrc
-		);
+			cmd->TransitionImageLayout(backbuffer, RHI::ImageLayout::ColorAttachment);
+			cmd->TransitionImageLayout(depthbuffer, RHI::ImageLayout::DepthAttachment);
 
-		auto depthbuffer = _graph.ImportImage(
-			"DepthBuffer", 
-			GetSwapchain()->GetDepthAttachment(),
-			Runtime::RHI::ImageLayout::Undefined,
-			Runtime::RHI::ImageLayout::DepthAttachment
-		);
+			RHI::RenderingSubmitInfo submit{};
+			submit.colorAttachments = { backbuffer };
+			submit.depthAttachment = depthbuffer;
+			submit.extent = extent;
+			cmd->BeginDynamicRendering(submit);
 
-		_graph.AddPass("Swapchain",
-			[&](RenderPassBuilder& builder) {
-				builder.Write(backbuffer, Runtime::RHI::ImageLayout::ColorAttachment);
-				builder.Write(depthbuffer, Runtime::RHI::ImageLayout::DepthAttachment);
-			},
-			[=](Runtime::RHI::CommandBuffer* cmd, const RenderGraphResourceContainer& res) {
-				auto* color = res.GetImage(backbuffer);
-				auto* depth = res.GetImage(depthbuffer);
-
-				Runtime::RHI::ColorAttachment colorAttachment{};
-				colorAttachment.image = color;
-				colorAttachment.clearColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-
-				Runtime::RHI::RenderingSubmitInfo info{};
-				info.colorAttachments = { colorAttachment };
-				info.depthAttachment = depth;
-				info.extent = glm::vec2(width, height);
-
-				Runtime::RHI::PassDebugInfo debugInfo{};
-				debugInfo.label = "SwapchainPass";
-				debugInfo.color = glm::vec3(1.0f, 1.0f, 0.0f);
-
-				cmd->BeginDynamicRendering(info, &debugInfo);
-
-				cmd->EndDynamicRendering();
-			});
+			cmd->EndDynamicRendering();
+			cmd->TransitionImageLayout(backbuffer, RHI::ImageLayout::PresentSrc);
+		}
 
 		for (auto& command : _commandQueue) { command(cmd); }
 		_commandQueue.clear();
 
-		_graph.Compile();
-		_graph.Execute(cmd);
-
 		EndFrame();
-
-		_graph.ClearPasses();
 	}
 
-	void RenderSubsystem::OnDestroy() {
+	void GraphicsSubsystem::OnDestroy() {
 		Subsystem::OnDestroy();
 
 		_context->WaitDeviceIdle();
@@ -195,12 +162,12 @@ namespace Tourqe::Engine {
 		Mem::Allocator::Destroy<RHI::Context>(_context);
 	}
 
-	void RenderSubsystem::GetDependencyGraph(DependencyGraph & graph) {
+	void GraphicsSubsystem::GetDependencyGraph(DependencyGraph & graph) {
 		graph.Require<AssetSubsystem>(DependencyOrder::Before);
 		graph.Require<WindowSubsystem>(DependencyOrder::After);
 	}
 
-	RHI::CommandBuffer* RenderSubsystem::BeginFrame() {
+	RHI::CommandBuffer* GraphicsSubsystem::BeginFrame() {
 		auto* window = _engine->GetSubsystem<WindowSubsystem>()->GetWindow();
 		if (window->IsMinimized()) {
 			_canSubmitCommand = false;
@@ -241,7 +208,7 @@ namespace Tourqe::Engine {
 		return frame.commandBuffer;
 	}
 
-	void RenderSubsystem::EndFrame() {
+	void GraphicsSubsystem::EndFrame() {
 		if (!_frameRecording) return;
 
 		FrameData* frame = GetCurrentFrameData();
@@ -262,14 +229,14 @@ namespace Tourqe::Engine {
 		_frameRecording = false;
 	}
 
-	void RenderSubsystem::Submit(CommandFunc func) { 
+	void GraphicsSubsystem::Submit(CommandFunc func) { 
 		if (!_canSubmitCommand) return;
 		_commandQueue.push_back(func); 
 	}
 
-	void RenderSubsystem::Track(RHI::Object* object) { GetCurrentFrameData()->trackedObjects.push_back(object); }
+	void GraphicsSubsystem::Track(RHI::Object* object) { GetCurrentFrameData()->trackedObjects.push_back(object); }
 
-	RHI::Buffer* RenderSubsystem::CreateStagingBuffer(usize dataSizeInBytes)
+	RHI::Buffer* GraphicsSubsystem::CreateStagingBuffer(usize dataSizeInBytes)
 	{
 		RHI::BufferDesc desc{};
 		desc.usage = RHI::BufferUsage::TransferSrc;
@@ -283,8 +250,8 @@ namespace Tourqe::Engine {
 		return stagingBuffer;
 	}
 
-	RenderSubsystem::FrameData* RenderSubsystem::GetCurrentFrameData() {
-		Logger::Assert(_frameRecording, "RenderSubsystem", "No active frame");
+	GraphicsSubsystem::FrameData* GraphicsSubsystem::GetCurrentFrameData() {
+		Logger::Assert(_frameRecording, "GraphicsSubsystem", "No active frame");
 		return &_frames[_currentFrameIndex];
 	}
 }

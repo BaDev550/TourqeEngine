@@ -8,6 +8,7 @@ namespace Runtime::RHI {
 #ifdef RHI_OBJECT_DECONSTRUCT_DEBUG
 		Logger::Info(GetObjectDebugName(), "Destroyed");
 #endif
+		if (_bindessId != u32_max) GetOwningRHIContext<VulkanContext>()->UnregisterBindlessBuffer(this);
 		if (_buffer != VK_NULL_HANDLE) vmaDestroyBuffer(GetOwningRHIContext<VulkanContext>()->GetAllocator(), _buffer, _allocation);
 	}
 
@@ -34,5 +35,12 @@ namespace Runtime::RHI {
 			return _gpuAddress;
 		}
 		return 0;
+	}
+
+	const u32 VulkanBuffer::GetBindlessIndex() {
+		if (_bindessId == u32_max) {
+			_bindessId = GetOwningRHIContext<VulkanContext>()->RegisterBindlessBuffer(this);
+		}
+		return _bindessId;
 	}
 }

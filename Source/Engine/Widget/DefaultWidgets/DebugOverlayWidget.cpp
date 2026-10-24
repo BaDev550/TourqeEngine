@@ -1,14 +1,14 @@
 #include "DebugOverlayWidget.h"
 
 #include <Engine/Core/Engine.h>
-#include <Engine/Renderer/RenderSubsystem.h>
+#include <Engine/Graphics/GraphicsSubsystem.h>
 #include <Engine/Window/WindowSubsystem.h>
 
 #include <imgui.h>
 
 namespace Tourqe::Engine {
 	void DebugOverlayWidget::Draw() {
-		auto* renderSystem = Engine::Get()->GetSubsystem<RenderSubsystem>();
+		auto* renderSystem = Engine::Get()->GetSubsystem<GraphicsSubsystem>();
 		auto* windowSystem = Engine::Get()->GetSubsystem<WindowSubsystem>();
 		auto* window = windowSystem->GetWindow();
 

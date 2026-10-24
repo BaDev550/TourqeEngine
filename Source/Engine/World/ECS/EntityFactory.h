@@ -17,8 +17,9 @@ namespace Tourqe::Engine {
 
 		Signature* GetSignatureOf(EntityHandle handle);
 		const Signature* GetSignatureOf(EntityHandle handle) const;
-
+		
 		void EnsureIndex(u32 index);
+		u32 GetLatestIndex() const { return _nextIndex; }
 	private:
 		std::vector<u32> _generations;
 		std::vector<u32> _freeList;

@@ -50,6 +50,11 @@ namespace Tourqe::Engine {
 			}
 			return nullptr;
 		}
+
+		Asset* TryAsset(Runtime::UUID uuid) {
+			if (!_assets.contains(uuid)) return nullptr;
+			return _assets[uuid];
+		}
 	private:
 		Asset* Load(Runtime::UUID id);
 		void Unload(Runtime::UUID id);

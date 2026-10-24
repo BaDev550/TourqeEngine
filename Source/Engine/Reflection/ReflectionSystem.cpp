@@ -28,4 +28,14 @@ namespace Tourqe::Engine {
 		auto it = _nameLookupTable.find(name);
 		return it->second;
 	}
+
+	Runtime::Reflection::Type* ReflectionSystem::GetType(const std::type_index& type)
+	{
+		if (!_lookupTable.contains(type)) {
+			Logger::Error("ReflectionSystem", "Requested type '{}' is not registered", type.name());
+			return nullptr;
+		}
+		auto it = _lookupTable.find(type);
+		return it->second;
+	}
 }

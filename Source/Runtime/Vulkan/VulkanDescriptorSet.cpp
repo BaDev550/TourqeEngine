@@ -37,7 +37,7 @@ namespace Runtime::RHI {
 		VkDescriptorBufferInfo bufferInfo{};
 		bufferInfo.buffer = vkBuffer->GetVkBuffer();
 		bufferInfo.offset = 0;
-		bufferInfo.range = 0;
+		bufferInfo.range = VK_WHOLE_SIZE;
 
 		VkWriteDescriptorSet write{};
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

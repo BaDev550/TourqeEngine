@@ -46,6 +46,8 @@ namespace Runtime::RHI {
 
 		u32 RegisterBindlessImage(Image* image);
 		void UnregisterBindlessImage(Image* image);
+		u32 RegisterBindlessBuffer(Buffer* buffer);
+		void UnregisterBindlessBuffer(Buffer* buffer);
 		u32 GetSamplerId(StaticSampler sampler);
 
 		[[nodiscard]] VkInstance GetInstance() const { return _instance; }

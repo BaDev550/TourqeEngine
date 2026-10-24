@@ -34,15 +34,15 @@ namespace Runtime::Reflection {
 		}
 		
 		void DestructAt(void* mem) const {
-			if (!_destructFunc) {
+			if (!CanDestruct()) {
 				Logger::Error("Type", "{} has No default deconstructor", _name);
 				return;
 			}
 			_destructFunc(mem);
 		}
 
-		void Move(void* dst, void* src) {
-			if (!_moveFunc) {
+		void MoveAt(void* dst, void* src) const {
+			if (!CanMove()) {
 				Logger::Error("Type", "{} has no default move constructor", _name);
 				return;
 			}
@@ -51,7 +51,7 @@ namespace Runtime::Reflection {
 		}
 
 		void* Create() const {
-			if (!_constructFunc) {
+			if (!CanConstruct()) {
 				Logger::Error("Type", "{} has no default constructor, cannot be created", _name);
 				return nullptr;
 			}
@@ -69,6 +69,10 @@ namespace Runtime::Reflection {
 			DestructAt(instance);
 			Mem::Allocator::Free(instance);
 		}
+
+		[[nodiscard]] inline b8 CanConstruct() const { return (bool)_constructFunc; }
+		[[nodiscard]] inline b8 CanDestruct() const { return (bool)_destructFunc; }
+		[[nodiscard]] inline b8 CanMove() const { return (bool)_moveFunc; }
 	private:
 		using ConstructFunc = std::function<void(void*)>;
 		using DestructFunc = std::function<void(void*)>;

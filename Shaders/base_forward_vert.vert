@@ -1,29 +1,30 @@
 #version 450
 
-vec2 vertices[6] = {
-	vec2(0.0f, 0.0f), // Bottom-left
-	vec2(1.0f, 0.0f), // Bottom-right
-	vec2(0.0f, 1.0f), // Top-left
+#include "core.glslh"
+#include "vertex_pulling.glslh"
 
-	vec2(0.0f, 1.0f), // Top-left
-	vec2(1.0f, 0.0f), // Bottom-right
-	vec2(1.0f, 1.0f)  // Top-right
-};
-
-layout(location = 0) out vec2 vTexCoords;
-
-layout(location = 1) out flat uint vTextureID;
-layout(location = 2) out flat uint vSamplerID;
+layout(location = 0) out vec3 vNormal;
+layout(location = 1) out vec2 vUV;
+layout(location = 2) out flat uint vTextureID;
+layout(location = 3) out flat uint vSamplerID;
 
 layout(push_constant) uniform PcData {
+	mat4 world;
+	uint frameDataIndex;
+	uint firstVertex;
+
+	uint vertexBufferID;
 	uint textureID;
 	uint samplerID;
 } uPc;
 
 void main() {
-	vec2 pos = vertices[gl_VertexIndex];
+	Vertex v = LoadVertex(uPc.vertexBufferID, uPc.firstVertex + uint(gl_VertexIndex));
+	mat4 viewProj = LoadMat4(uPc.frameDataIndex, 0u);
+
 	vTextureID = uPc.textureID;
 	vSamplerID = uPc.samplerID;
-	vTexCoords = pos;
-	gl_Position = vec4(pos * 2.0f - 1.0f, 0.0f, 1.0f);
+	vNormal = mat3(uPc.world) * v.normal;
+	vUV = v.uv;
+	gl_Position = viewProj * uPc.world * vec4(v.position, 1.0f);
 }

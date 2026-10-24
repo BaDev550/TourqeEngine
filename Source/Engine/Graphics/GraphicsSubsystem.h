@@ -1,7 +1,5 @@
 #pragma once
 #include <Engine/Subsystem/Subsystem.h>
-#include <Engine/Asset/Shader/Shader.h>
-#include <Engine/Renderer/RenderGraph/RenderGraph.h>
 
 #include <Runtime/RHI/Swapchain/RHISwapchain.h>
 #include <Runtime/RHI/Context/RHIContext.h>
@@ -9,22 +7,21 @@
 #include <Runtime/RHI/Buffer/RHIBuffer.h>
 #include <Runtime/RHI/Pipeline/RHIPipeline.h>
 #include <Runtime/RHI/ImGui/ImGuiContext.h>
-
 #include <Runtime/RHI/Command/RHICommandPool.h>
 #include <Runtime/RHI/Command/RHICommandBuffer.h>
 #include <Runtime/RHI/Sync/RHIFence.h>
+#include <Runtime/RHI/Sync/RHIFenceDesc.h>
 #include <Runtime/RHI/Queue/RHIQueue.h>
-
 #include <Runtime/RHI/Descriptor/RHIDescriptorHeap.h>
 #include <Runtime/RHI/Descriptor/RHIDescriptorSet.h>
+#include <Runtime/RHI/Command/RHICommandBufferDesc.h>
+#include <Runtime/RHI/Command/RHICommandPoolDesc.h>
 
 namespace Tourqe::Engine {
 	using namespace Runtime;
 	using CommandFunc = std::function<void(RHI::CommandBuffer* cmd)>;
 
-	class Texture2D;
-
-	class ENGINE_API RenderSubsystem final : public Subsystem {
+	class ENGINE_API GraphicsSubsystem final : public Subsystem {
 	public:
 		constexpr static u32 MaxFramesInFlight = 2;
 		
@@ -45,8 +42,8 @@ namespace Tourqe::Engine {
 
 		RHI::Buffer* CreateStagingBuffer(usize dataSizeInBytes);
 
-		[[nodiscard]] RenderGraph& GetRenderGraph() { return _graph; }
 		[[nodiscard]] const u32 GetImageIndex() const { return _imageIndex; }
+		[[nodiscard]] const u32 GetFrameIndex() const { return _currentFrameIndex; }
 		[[nodiscard]] RHI::Image* GetDefaultWhiteImage() const { return _defaultWhiteImage; }
 		[[nodiscard]] RHI::Context* GetContext() { return _context; }
 		[[nodiscard]] RHI::Swapchain* GetSwapchain() { return _swapchain; }
@@ -55,7 +52,6 @@ namespace Tourqe::Engine {
 		RHI::Context* _context = nullptr;
 		RHI::Swapchain* _swapchain = nullptr;
 		RHI::ImGuiContext* _imguiContext = nullptr;
-		RenderGraph _graph;
 
 		struct FrameData {
 			RHI::CommandPool* commandPool = nullptr;

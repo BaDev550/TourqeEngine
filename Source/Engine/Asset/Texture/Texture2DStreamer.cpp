@@ -11,7 +11,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include <Engine/Renderer/RenderSubsystem.h>
+#include <Engine/Graphics/GraphicsSubsystem.h>
 #include <Runtime/RHI/Buffer/RHIBuffer.h>
 #include <Runtime/RHI/Image/RHIImage.h>
 #include <Runtime/RHI/Common/RHIUtils.h>
@@ -91,10 +91,10 @@ namespace Tourqe::Engine {
 
         texture->SetAssetState(AssetState::Loading);
 
-        auto* renderSubsystem = Engine::Get()->GetSubsystem<RenderSubsystem>();
+        auto* graphicsSubsystem = Engine::Get()->GetSubsystem<GraphicsSubsystem>();
 
-        renderSubsystem->Submit([=](Runtime::RHI::CommandBuffer* cmd) {
-			RHI::Buffer* stagingBuffer = renderSubsystem->CreateStagingBuffer(header.dataSize);
+        graphicsSubsystem->Submit([=](Runtime::RHI::CommandBuffer* cmd) {
+			RHI::Buffer* stagingBuffer = graphicsSubsystem->CreateStagingBuffer(header.dataSize);
 			stagingBuffer->Write(imageData.data());
 
 			cmd->TransitionImageLayout(texture->_image, Runtime::RHI::ImageLayout::TransferDst);

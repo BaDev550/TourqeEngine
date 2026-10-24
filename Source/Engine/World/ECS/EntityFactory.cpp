@@ -3,9 +3,9 @@
 
 namespace Tourqe::Engine {
 	EntityFactory::EntityFactory() {
-		_generations.resize(MaxEntities);
-		_signatures.resize(MaxEntities);
-		_alive.resize(MaxEntities);
+		_generations.resize(EstimatedEntities);
+		_signatures.resize(EstimatedEntities);
+		_alive.resize(EstimatedEntities);
 	}
 
 	EntityHandle EntityFactory::Create() {
@@ -32,7 +32,7 @@ namespace Tourqe::Engine {
 			return;
 		usize newCount = _generations.size();
 		if (newCount == 0)
-			newCount = MaxEntities;
+			newCount = EstimatedEntities;
 
 		while (newCount <= index)
 			newCount *= 2;

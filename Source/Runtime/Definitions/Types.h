@@ -28,4 +28,6 @@ using b8 = bool;
 using c8 = char;
 using c16 = wchar_t;
 
+using f32 = float;
+
 inline constexpr u32 u32_max = std::numeric_limits<u32>::max();

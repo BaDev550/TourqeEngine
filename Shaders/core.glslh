@@ -1,7 +1,10 @@
+#ifndef CORE_GLSLH
+#define CORE_GLSLH
+
 #extension GL_EXT_nonuniform_qualifier : require
 #extension GL_EXT_buffer_reference : require
 
-#define UniformGlobalSet 0
+#define StaticSamplerSet 0
 #define BindlessGlobalSet 1
 
 layout(set = BindlessGlobalSet, binding = 0) uniform texture2D uGlobalTextures2D[];
@@ -9,6 +12,13 @@ layout(set = BindlessGlobalSet, binding = 1) readonly buffer GlobalBufferBlock {
     uint data[];
 } uGlobalBuffers[];
 
-layout(set = UniformGlobalSet, binding = 0) uniform sampler uGlobalSamplers[];
+layout(set = StaticSamplerSet, binding = 0) uniform sampler uGlobalSamplers[];
 
 #define GetBindlessTextureFromID(id, samplerId) sampler2D(uGlobalTextures2D[nonuniformEXT(id)], uGlobalSamplers[nonuniformEXT(samplerId)])
+float LoadFloat(uint bufferId, uint i) { return uintBitsToFloat(uGlobalBuffers[nonuniformEXT(bufferId)].data[i]); }
+vec2  LoadVec2 (uint b, uint i) { return vec2(LoadFloat(b, i), LoadFloat(b, i + 1u)); }
+vec3  LoadVec3 (uint b, uint i) { return vec3(LoadVec2(b, i), LoadFloat(b, i + 2u)); }
+vec4  LoadVec4 (uint b, uint i) { return vec4(LoadVec3(b, i), LoadFloat(b, i + 3u)); }
+mat4  LoadMat4 (uint b, uint i) { return mat4(LoadVec4(b, i), LoadVec4(b, i + 4u), LoadVec4(b, i + 8u), LoadVec4(b, i + 12u)); }
+
+#endif

@@ -9,7 +9,7 @@ namespace Tourqe::Engine {
 		GENERATE_CLASS(SpriteComponent);
 	public:
 		TPROP()
-		Runtime::UUID TextureAssetHandle;
+		Runtime::UUID TextureAssetHandle = 0;
 
 		TPROP()
 		b8 Visible;

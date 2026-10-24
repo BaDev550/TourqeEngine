@@ -18,21 +18,7 @@ namespace Tourqe::Engine {
 		TPROP();
 		glm::vec3 scale = glm::vec3(1.0f);
 
-		TransformComponent operator*(const TransformComponent& other) const {
-			return {
-				other.position * position,
-				other.rotation * rotation,
-				other.scale * scale
-			};
-		}
-
-		TransformComponent operator+(const TransformComponent& other) const {
-			return {
-				other.position + position,
-				other.rotation + rotation,
-				other.scale + scale
-			};
-		}
+		glm::mat4 world = glm::mat4(1.0f);
 
 		TransformComponent(const glm::vec3& pos, const glm::quat& rot, const glm::vec3& scl) : position(pos), rotation(rot), scale(scl) {}
 		TransformComponent(const glm::vec3& pos, const glm::vec3& rot, const glm::vec3& scl) : position(pos), rotation(rot), scale(scl) {}

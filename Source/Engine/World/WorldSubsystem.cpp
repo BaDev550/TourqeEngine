@@ -3,12 +3,14 @@
 #include <Engine/World/Systems/SceneRenderer2D.h>
 
 #include <Engine/Asset/AssetSubsystem.h>
-#include <Engine/Renderer/RenderSubsystem.h>
+#include <Engine/Graphics/GraphicsSubsystem.h>
 #include <Engine/MT/JobSystem.h>
 
 namespace Tourqe::Engine {
 	Runtime::Result WorldSubsystem::OnCreate(Engine* engine) {
 		Subsystem::OnCreate(engine);
+
+		auto* reflectionSystem = Engine::Get()->GetReflectionSystem();
 
 		SceneRenderer2DSystem* renderSystem = Runtime::Mem::Allocator::Construct<SceneRenderer2DSystem>();
 		renderSystem->SetEngine(engine);
@@ -16,7 +18,7 @@ namespace Tourqe::Engine {
 
 		_systems.push_back(std::move(renderSystem));
 
-		_activeScene = Runtime::Mem::Allocator::Construct<Scene>();
+		_activeScene = Runtime::Mem::Allocator::Construct<Scene>(reflectionSystem);
 
 		return Runtime::Result();
 	}
@@ -41,6 +43,6 @@ namespace Tourqe::Engine {
 
 	void WorldSubsystem::GetDependencyGraph(DependencyGraph& graph) {
 		graph.Require<AssetSubsystem>(DependencyOrder::After);
-		graph.Require<RenderSubsystem>(DependencyOrder::After);
+		graph.Require<GraphicsSubsystem>(DependencyOrder::After);
 	}
 }

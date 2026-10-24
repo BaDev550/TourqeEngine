@@ -90,6 +90,9 @@ namespace Runtime::RHI {
 			vkContext->BeginDebugLabel(_commandBuffer, &passLabel);
 			_debugPassAttached = true;
 		}
+		else {
+			_debugPassAttached = false;
+		}
 		vkCmdBeginRendering(_commandBuffer, &renderInfo);
 
 		{
