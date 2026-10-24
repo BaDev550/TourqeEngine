@@ -16,12 +16,17 @@ namespace Tourqe::Engine {
 		void ClearPasses();
 		void Execute(Runtime::RHI::CommandBuffer* cmd);
 
-		[[nodiscard]] RHI::Image* GetImage(const std::string& name);
-	private:
-		std::vector<RenderPass*> _passes;
-		std::unordered_map<RenderPassState, i32> _passesLookupTable;
+		RenderPassResourceHandle Write(RenderPassResource resource);
+		RenderPassResourceHandle Read(RenderPassResource resource);
+		RenderPassResourceHandle ReadWrite(RenderPassResource resource);
 
-		RenderPassResourceContainer _accessResourceContainer;
-		std::unordered_map<std::string, RenderPassAccess> _accessResourceLinkedPasses;
+		[[nodiscard]] RHI::Image* GetImage(RenderPassResourceHandle handle);
+		[[nodiscard]] RHI::Image* GetImage(const std::string& name);
+		[[nodiscard]] const std::vector<RenderPassResource>& GetResources() const { return _resources; }
+	private:
+		std::array<std::vector<RenderPass*>, (u8)RenderPassState::Count> _passes;
+
+		std::vector<RenderPassResource> _resources;
+		std::unordered_map<std::string, i32> _resourceLookupTable;
 	};
 }

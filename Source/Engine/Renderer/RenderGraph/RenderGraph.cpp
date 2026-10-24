@@ -15,11 +15,10 @@ namespace Tourqe::Engine {
 			Logger::Error("RenderGraph", "Failed to initialize render graph");
 			return;
 		}
-		auto renderState = pass->GetRenderState();
-		
-		u32 passIndex = static_cast<u32>(_passes.size());
+		u8 renderState = static_cast<u8>(pass->GetRenderState());
+		u32 passIndex = static_cast<u32>(_passes[renderState].size());
 
-		pass->RegisterResources(_accessResourceContainer);
+		pass->RegisterResources(*this);
 		for (usize i = 0; i < _accessResourceContainer.GetResources().size(); i++) {
 			auto& resource = container.GetResource(i);
 
@@ -30,89 +29,56 @@ namespace Tourqe::Engine {
 		passes.push_back(std::move(pass));
 	}
 
+	RenderPassResourceHandle RenderGraph::Write(RenderPassResource resource) {
+			
+	}
+
+	RenderPassResourceHandle RenderGraph::Read(RenderPassResource resource) {
+	
+	}
+
+	RenderPassResourceHandle RenderGraph::ReadWrite(RenderPassResource resource) {
+	
+	}
+
+	RHI::Image* RenderGraph::GetImage(RenderPassResourceHandle handle) { 
+		auto it = _resources[handle.id];
+		if (it.handle.generation != handle.generation) {
+			Logger::Error("RenderGraph", "Invalid resource access");
+			return nullptr;
+		}
+		return it.attachment;
+	}
+
+	RHI::Image* RenderGraph::GetImage(const std::string& name) {
+		if (!_resourceLookupTable.contains(name)) {
+			Logger::Error("RenderGraph", "Invalid resource access, resource '{}' not registered", name);
+			return nullptr;
+		}
+
+		auto it = _resourceLookupTable.find(name);
+		
+		return GetImage(_resources[it->second].handle);
+	}
+
+
 	void RenderGraph::Compile() {
-		std::vector<b8> needed(_resources.size(), false);
-		for (i32 i = static_cast<i32>(_passes.size()) - 1; i >= 0; i--) {
-			RenderPass* pass = _passes[i];
-			if (!pass) continue;
 
-			b8 live = pass->HasSideEffects();
-			for (const RenderPassAccess& a : pass->GetAccesses()) {
-				if (a.write && ((_resources[a.handle.id].state == AssetState::Loaded) || needed[a.handle.id])) live = true;
-			}
-			pass->SetLife(live);
-			if (!live) continue;
-			for (const RenderPassAccess& a : pass->GetAccesses()) needed[a.handle.id] = true;
-		}
-
-		std::vector<Runtime::RHI::ImageLayout> currentLayouts(_resources.size());
-		for (usize i = 0; i < _resources.size(); i++) {
-			currentLayouts[i] = (_resources[i].state == AssetState::Loaded) ? _resources[i].initalState : Runtime::RHI::ImageLayout::Undefined;
-			_resources[i].firstUse = -1;
-			_resources[i].lastUse = -1;
-		}
-		std::vector<bool> lastWrite(_resources.size(), false);
-
-		for (i32 i = 0; i < static_cast<i32>(_passes.size()); i++) {
-			RenderPass* pass = _passes[i];
-			if (!pass) continue;
-
-			pass->GetBarriers().clear();
-
-			if (!pass->IsAlive()) continue;
-			for (const RenderPassAccess& a : pass->GetAccesses()) {
-				RenderGraphResourceContainer::RenderGraphResource& res = _resources[a.handle.id];
-				const bool stateChanged = currentLayouts[a.handle.id] != a.layout;
-				const bool hazard = lastWrite[a.handle.id] || a.write;
-				if (stateChanged || hazard) {
-					pass->AddBarrier({ a.handle, currentLayouts[a.handle.id], a.layout });
-				}
-				currentLayouts[a.handle.id] = a.layout;
-				lastWrite[a.handle.id] = a.write;
-				if (res.firstUse < 0) res.firstUse = i;
-				res.lastUse = i;
-			}
-		}
-
-		_finalBarriers.clear();
-		for (usize i = 0; i < _resources.size(); i++) {
-			if ((_resources[i].state == AssetState::Loaded) && currentLayouts[i] != _resources[i].finalState && _resources[i].lastUse >= 0) {
-				_finalBarriers.push_back({ { static_cast<u32>(i) }, currentLayouts[i], _resources[i].finalState });
-			}
-		}
 	}
 
 	void RenderGraph::Execute(Runtime::RHI::CommandBuffer * cmd) {
-		auto* renderSubsystem = Engine::Get()->GetSubsystem<RenderSubsystem>();
 
-		for (auto& resource : _resources) {
-			if ((resource.state == AssetState::InDisk) && resource.lastUse >= 0) {
-				resource.physicalAttachment = renderSubsystem->GetContext()->CreateImage(resource.desc);
-				renderSubsystem->Track(resource.physicalAttachment);
-			}
-		}
-
-		RenderGraphResourceContainer view(&_resources);
-		for (auto pass : _passes) {
-			if (!pass) continue;
-
-			if (!pass->IsAlive()) continue;
-			for (const RenderPassBarrier& barrier : pass->GetBarriers()) EmitBarrier(cmd, barrier);
-			pass->ExecFunc(cmd, view);
-		}
-		for (const RenderPassBarrier& barrier : _finalBarriers) EmitBarrier(cmd, barrier);
-	}
-
-	void RenderGraph::EmitBarrier(Runtime::RHI::CommandBuffer * cmd, const RenderPassBarrier & barrier) {
-		cmd->TransitionImageLayout(_resources[barrier.handle.id].physicalAttachment, barrier.after);
 	}
 
 	void RenderGraph::ClearPasses() {
-		for (auto& pass : _passes) {
-			Runtime::Mem::Allocator::Destroy(pass);
-			pass = nullptr;
+		for (auto& stages : _passes) {
+			for (auto& pass : stages) {
+				Runtime::Mem::Allocator::Destroy(pass);
+				pass = nullptr;
+			}
 		}
-		_finalBarriers.clear();
+		_passes.clear();
 		_resources.clear();
+		_resourceLookupTable.clear();
 	}
 }

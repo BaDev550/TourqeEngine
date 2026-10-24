@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Engine/Renderer/RenderGraph/RenderGraphResource.h>
 #include <Runtime/RHI/Command/RHICommandBuffer.h>
 #include <Runtime/Reflection/ReflectObject.h>
 #include <functional>
@@ -15,25 +14,24 @@ namespace Tourqe::Engine {
 		PrePass,
 		Shadow,
 		EarlyPass,
-		Overlay
+		Overlay,
+		Count
 	};
 
 	TCLASS();
 	class RenderPass : public Runtime::Reflection::ReflectObject {
 		GENERATE_CLASS(RenderPass)
 	public:
-		RenderPass() : _alive(false) {}
+		RenderPass() = default;
 		virtual ~RenderPass() = default;
 
-		virtual void RegisterResources(RenderPassResourceContainer& container) {};
-		virtual void RequestResources(RenderGraph& graph) {};
+		virtual void RegisterResources(RenderGraph& graph) {};
 		virtual void Execute(Runtime::RHI::CommandBuffer* cmd, RenderGraph& graph) = 0;
 
 		[[nodiscard]] virtual RenderPassState GetRenderState() = 0;
 
-		void SetLife(b8 alive) { _alive = alive; }
-		[[nodiscard]] __forceinline b8 IsAlive() const { return _alive; }
+		[[nodiscard]] std::vector<i32> GetActiveResources() const { return _activeResources; }
 	protected:
-		b8 _alive;
+		std::vector<i32> _activeResources;
 	};
 }

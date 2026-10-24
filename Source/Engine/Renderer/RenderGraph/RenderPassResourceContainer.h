@@ -11,6 +11,7 @@
 namespace Tourqe::Engine {
 	struct RenderPassResource {
 		std::string name;
+		RenderPassResourceHandle handle;
 		RenderPassResourceAccessFlag access;
 		Runtime::RHI::Image* attachment = nullptr;
 		
@@ -33,6 +34,5 @@ namespace Tourqe::Engine {
 		[[nodiscard]] RenderPassResource& GetResource(usize index) { return _resources[index]; }
 		[[nodiscard]] const std::vector<RenderPassResource>& GetResources() const { return _resources; }
 	private:
-		std::vector<RenderPassResource> _resources;
 	};
 }
