@@ -10,7 +10,7 @@ namespace Runtime {
 
 		std::string GetMessage() const { return _msg.data(); }
 
-		operator bool() const { return _msg.empty(); }
+		operator b8() const { return _msg.empty(); }
 	private:
 		std::string_view _msg;
 	};

@@ -14,7 +14,7 @@
 namespace Tourqe::Engine {
 	Runtime::Result SceneRenderer2DSystem::OnCreate() {
 		auto renderSystem = _engine->GetSubsystem<GraphicsSubsystem>();
-
+		
 		_forwardRenderPass = Runtime::Mem::Allocator::Construct<ForwardRenderPass>();
 		_forwardRenderPass->SetEngine(_engine);
 		_forwardRenderPass->OnInitialize();
@@ -65,10 +65,12 @@ namespace Tourqe::Engine {
 
 			scene.ForEach<TransformComponent, SpriteComponent>([&](EntityHandle entity, TransformComponent& transform, SpriteComponent& sprite) {
 				if (!sprite.Visible) return;
-				if (sprite.TextureAssetHandle == 0) return;
+				if (!sprite.TextureAssetHandle.IsValid()) return;
 
 				Texture2D* asset = static_cast<Texture2D*>(assetSystem->TryAsset(sprite.TextureAssetHandle));
 				if (!asset) return;
+
+				transform.world = glm::translate(glm::mat4(1.0f), transform.position) * glm::scale(glm::mat4(1.0f), transform.scale);
 
 				RenderItem item{};
 				item.textureID = asset->_image->GetBindlessIndex();

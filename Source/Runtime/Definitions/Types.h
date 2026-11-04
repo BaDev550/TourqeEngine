@@ -20,6 +20,7 @@ using u64 = uint64_t;
 using i8 =	int8_t;
 using i16 = int16_t;
 using i32 = int32_t;
+using i64 = int64_t;
 
 using uptr = uintptr_t;
 using usize = size_t;
@@ -29,5 +30,8 @@ using c8 = char;
 using c16 = wchar_t;
 
 using f32 = float;
+using f64 = double;
 
+inline constexpr u8 u8_max = std::numeric_limits<u8>::max();
+inline constexpr u16 u16_max = std::numeric_limits<u16>::max();
 inline constexpr u32 u32_max = std::numeric_limits<u32>::max();

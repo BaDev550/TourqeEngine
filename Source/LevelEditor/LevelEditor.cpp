@@ -22,18 +22,42 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 	auto context = renderSystem->GetContext();
 
 	//ImGui::SetCurrentContext(context->GetImGuiContext());
-	Texture2D* texture = assetSystem->Get<Texture2D>("dog-meme.png");
+	Texture2D* guventexture = assetSystem->Get<Texture2D>("guven-catak.jpg");
+	Texture2D* barbarostexture = assetSystem->Get<Texture2D>("barbaros-bostan.jpg");
 
-	EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
-	TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
-	SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
-	tc->position = glm::vec3(0.0f, 0.0f, 0.0f);
-	tc->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-	tc->scale = glm::vec3(1.0f, 1.0f, 1.0f);
+	{
+		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
+		TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
+		SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
+		tc->position = glm::vec3(0.0f, 0.0f, 0.0f);
+		tc->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+		tc->scale = glm::vec3(5.0f, 5.0f, 5.0f);
 
-	sc->TextureAssetHandle = texture->GetAssetHandle();
-	sc->Visible = true;
+		sc->TextureAssetHandle = guventexture->GetAssetHandle();
+		sc->Visible = true;
+	}
+	{
+		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
+		TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
+		SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
+		tc->position = glm::vec3(7.0f, 0.0f, 0.0f);
+		tc->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+		tc->scale = glm::vec3(-2.0f, 2.0f, 2.0f);
 
+		sc->TextureAssetHandle = barbarostexture->GetAssetHandle();
+		sc->Visible = true;
+	}
+	{
+		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
+		TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
+		SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
+		tc->position = glm::vec3(-7.0f, 0.0f, 0.0f);
+		tc->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+		tc->scale = glm::vec3(2.0f, 2.0f, 2.0f);
+
+		sc->TextureAssetHandle = barbarostexture->GetAssetHandle();
+		sc->Visible = true;
+	}
     return Runtime::Result();
 }
 
