@@ -37,7 +37,7 @@ namespace Tourqe::Engine {
         imageDesc.format = Runtime::RHI::Format::BC3;
         imageDesc.width = width;
         imageDesc.height = height;
-        imageDesc.sampler = Runtime::RHI::StaticSampler::NearestClamp;
+        imageDesc.sampler = Runtime::RHI::StaticSampler::LinearClamp;
         imageDesc.view.type = Runtime::RHI::ImageViewType::Image2D;
         imageDesc.usage = Runtime::RHI::ImageUsage::Sampled | Runtime::RHI::ImageUsage::TransferDst;
         imageDesc.tileMode = Runtime::RHI::ImageTileMode::Optimal;
@@ -81,7 +81,7 @@ namespace Tourqe::Engine {
             header.typeName,
             header.dataSize,
             header.dataOffset,
-            header.handle.Str(),
+            header.handle.index,
             imageData.size(),
             imageDesc.width,
             imageDesc.height,
@@ -121,7 +121,7 @@ namespace Tourqe::Engine {
 
         nvtt::CompressionOptions compOptions;
         compOptions.setFormat(nvtt::Format_BC3);
-        compOptions.setQuality(nvtt::Quality_Normal);
+        compOptions.setQuality(nvtt::Quality_Fastest);
 
         NvttVectorOutputHandler outputHandler(compressedImage);
         nvtt::OutputOptions outputOptions;

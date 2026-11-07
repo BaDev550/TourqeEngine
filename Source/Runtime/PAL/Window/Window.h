@@ -8,8 +8,6 @@ namespace Runtime::PAL {
 	public:
 		virtual ~Window() = default;
 
-		[[nodiscard]] virtual const Platform GetPlatform() const = 0;
-
 		virtual b8 ShouldClose() const = 0;
 		virtual void PollEvents() = 0;
 		[[nodiscard]] virtual WindowHandle GetHandle() const = 0;
@@ -18,6 +16,4 @@ namespace Runtime::PAL {
 		[[nodiscard]] virtual const u32 GetHeight() const = 0;
 		[[nodiscard]] virtual const b8 IsMinimized() const = 0;
 	};
-
-	Window* CreateNewWindow(const WindowDesc& desc);
 }

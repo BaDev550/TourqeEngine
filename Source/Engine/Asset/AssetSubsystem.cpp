@@ -36,7 +36,12 @@ namespace Tourqe::Engine {
 		Subsystem::OnDestroy();
 
 		for (const auto& [id, ast] : _assets) {
-			if (ast) Runtime::Mem::Allocator::Destroy(ast);
+			if (ast) {
+#ifdef ASSETMANAGER_DEBUG
+				Logger::Info("AssetSubsystem", "Destroying asset: {}", ast->GetClassName());
+#endif
+				Runtime::Mem::Allocator::Destroy(ast);
+			}
 		}
 		_assets.clear();
 
@@ -47,16 +52,15 @@ namespace Tourqe::Engine {
 		_assetStreamerLookupTable.clear();
 	}
 
-	Asset* AssetSubsystem::Load(Runtime::UUID id) {
+	Asset* AssetSubsystem::Load(AssetHandle handle) {
 		Logger::Info("AssetSubystem", "Reading asset file");
 
-		AssetSource cachedSource = _cachedAssetSources.find(id)->second;
+		AssetSource cachedSource = _cachedAssetSources.find(handle)->second;
 		AssetStreamer* streamer = GetAssetCookerOfType(cachedSource.type);
 		if (streamer) {
 			Asset* ast = streamer->Import(cachedSource);
 			if (ast) {
-				ast->SetAssetStreamer(streamer);
-				ast->SetAssetHandle(id);
+				ast->SetAssetHandle(handle);
 
 				_assets[ast->GetAssetHandle()] = ast;
 
@@ -71,21 +75,21 @@ namespace Tourqe::Engine {
 		return nullptr;
 	}
 
-	void AssetSubsystem::Unload(Runtime::UUID id) {
+	void AssetSubsystem::Unload(AssetHandle id) {
 
 	}
 
-	b8 AssetSubsystem::AssetLoaded(Runtime::UUID id) {
+	b8 AssetSubsystem::AssetLoaded(AssetHandle id) {
 		if (_assets.find(id) == _assets.end()) {
-			Logger::Warn("AssetSubsystem", "Asset {} is not loaded", id.Str());
+			Logger::Warn("AssetSubsystem", "Asset {} is not loaded", id.index);
 			return false;
 		}
 		return true;
 	}
 
-	b8 AssetSubsystem::AssetInCache(Runtime::UUID id) {
+	b8 AssetSubsystem::AssetInCache(AssetHandle id) {
 		if (_cachedAssetSources.find(id) == _cachedAssetSources.end()) {
-			Logger::Warn("AssetSubsystem", "Asset {} is not in cache", id.Str());
+			Logger::Warn("AssetSubsystem", "Asset {} is not in cache", id.index);
 			return false;
 		}
 		return true;
@@ -136,7 +140,7 @@ namespace Tourqe::Engine {
 
 				_cachedAssetSources.clear();
 				for (auto& source : sources) {
-					Logger::Info("AssetSubsystem", "Asset cached: \n id: {}\n type: {}\n source path: {}\n cooked path: {}", source.handle.Str(), source.type, source.sourcePath, source.cookedPath);
+					Logger::Info("AssetSubsystem", "Asset cached: \n id: {}\n type: {}\n source path: {}\n cooked path: {}", source.handle.index, source.type, source.sourcePath, source.cookedPath);
 					_cachedAssetSources[source.handle] = std::move(source);
 				}
 			}

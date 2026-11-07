@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Runtime/Definitions/Types.h>
-#include <Runtime/PAL/Platform.h>
 #include <string>
 
 namespace Runtime::PAL {

@@ -9,6 +9,7 @@ namespace Tourqe::Engine {
 	class ReflectionSystem;
 	class PluginSystem;
 	class JobSystem;
+	class PlatformSystem;
 
 	class ENGINE_API Engine final {
 	public:
@@ -47,6 +48,7 @@ namespace Tourqe::Engine {
 		ReflectionSystem* GetReflectionSystem() const { return _reflectionSystem; }
 		PluginSystem* GetPluginSystem() const { return _pluginSystem; }
 		JobSystem* GetJobSystem() const { return _jobSystem; }
+		PlatformSystem* GetPlatformSystem() const { return _platformSystem; }
 	private:
 		void SortAndInitializeSystems();
 		static Engine* _instance;
@@ -64,5 +66,6 @@ namespace Tourqe::Engine {
 		ReflectionSystem* _reflectionSystem = nullptr;
 		PluginSystem* _pluginSystem = nullptr;
 		JobSystem* _jobSystem = nullptr;
+		PlatformSystem* _platformSystem = nullptr;
 	};
 }

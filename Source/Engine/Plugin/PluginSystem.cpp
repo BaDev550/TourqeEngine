@@ -1,5 +1,5 @@
 #include <Engine/Plugin/PluginSystem.h>
-#include <Engine/Window/WindowSubsystem.h>
+#include <Engine/Platform/Window/WindowSubsystem.h>
 
 #include <Runtime/Definitions/Logger.h>
 
@@ -17,7 +17,7 @@ namespace Tourqe::Engine {
     }
 
     b8 PluginSystem::LoadPlugin(const std::string& pluginName) {
-#ifdef _WIN32
+#ifdef _WIN32 // Move to platform system
         HMODULE handle = LoadLibraryA(pluginName.c_str());
         if (handle) {
             _loadedPlugins.push_back(handle);

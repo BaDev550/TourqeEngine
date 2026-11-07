@@ -10,7 +10,18 @@
 #include <imgui_impl_vulkan.h>
 
 namespace Runtime::RHI {
-	VulkanImGuiContext::VulkanImGuiContext(VulkanContext* owner, Runtime::RHI::Queue* queue) : _owner(*owner) {
+	void VulkanImGuiContext::CreateContext() {
+		auto* context = ImGui::CreateContext();
+		auto& io = ImGui::GetIO();
+		io.WantCaptureKeyboard = true;
+		io.WantCaptureMouse = true;
+		io.ConfigFlags |= ImGuiConfigFlags_IsSRGB;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+		ImGui::SetCurrentContext(context);
+	}
+
+	void VulkanImGuiContext::CreateNativeImGui() {
 		VkDescriptorPoolSize pool_sizes[] = {
 			{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
 			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
@@ -26,26 +37,15 @@ namespace Runtime::RHI {
 		pool_info.poolSizeCount = std::size(pool_sizes);
 		pool_info.pPoolSizes = pool_sizes;
 
-		vkCreateDescriptorPool(owner->GetDevice(), &pool_info, nullptr, &_imguiDescriptorPool); // add check
-
-		auto* context = ImGui::CreateContext();
-		auto& io = ImGui::GetIO();
-		io.WantCaptureKeyboard = true;
-		io.WantCaptureMouse = true;
-		io.ConfigFlags |= ImGuiConfigFlags_IsSRGB;
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
-		ImGui::SetCurrentContext(context);
-		_PALContext = PAL::CreateImGuiForPlatform(owner->GetDesc()->platformDesc.windowHandle);
-		VulkanQueue* vkQueue = static_cast<VulkanQueue*>(queue);
+		vkCreateDescriptorPool(_owner.GetDevice(), &pool_info, nullptr, &_imguiDescriptorPool); // add check
 
 		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.Instance = owner->GetInstance();
+		init_info.Instance = _owner.GetInstance();
 		init_info.ApiVersion = VK_API_VERSION_1_3;
-		init_info.PhysicalDevice = owner->GetPhysicalDevice();
-		init_info.Device = owner->GetDevice();
-		init_info.Queue = vkQueue->GetVkQueue();
-		init_info.QueueFamily = vkQueue->GetQueueFamilyIndex();
+		init_info.PhysicalDevice = _owner.GetPhysicalDevice();
+		init_info.Device = _owner.GetDevice();
+		init_info.Queue = _queue->GetVkQueue();
+		init_info.QueueFamily = _queue->GetQueueFamilyIndex();
 		init_info.DescriptorPool = _imguiDescriptorPool;
 		init_info.MinImageCount = 2;
 		init_info.ImageCount = 2;
@@ -64,16 +64,17 @@ namespace Runtime::RHI {
 		Logger::Info("VulkanImGuiContext", "ImGui initialized");
 	}
 
+	VulkanImGuiContext::VulkanImGuiContext(VulkanContext* owner, Runtime::RHI::Queue* queue) 
+		: _owner(*owner), _queue(static_cast<VulkanQueue*>(queue)) { }
+
 	VulkanImGuiContext::~VulkanImGuiContext() {
 		ImGui_ImplVulkan_Shutdown();
-		Mem::Allocator::Destroy(_PALContext);
 		vkDestroyDescriptorPool(_owner.GetDevice(), _imguiDescriptorPool, nullptr);
 		ImGui::DestroyContext();
 	}
 
 	void VulkanImGuiContext::Begin() const {
 		ImGui_ImplVulkan_NewFrame();
-		_PALContext->NewFrame();
 	}
 
 	void VulkanImGuiContext::Flush(Runtime::RHI::CommandBuffer* cmd) const {

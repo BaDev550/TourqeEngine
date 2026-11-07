@@ -5,6 +5,7 @@
 #include <Engine/Asset/Asset.h>
 #include <Engine/Asset/AssetStreamer.h>
 #include <Engine/Asset/AssetSource.h>
+#include <Runtime/IO/Path.h>
 #include <unordered_set>
 
 namespace Tourqe::Engine {
@@ -18,9 +19,10 @@ namespace Tourqe::Engine {
 		AssetT* Get(const std::string& path) {
 			std::string assetType = AssetT::GetStaticClassName().data();
 
-			std::filesystem::path sourcePath = path;
-			std::filesystem::path targetPath = "cooked" / std::filesystem::path(path).replace_extension(ASSET_EXTENSION);
-			Runtime::UUID assetID = Runtime::UUID(sourcePath.string()); // TODO(0x): add a time to hashing so it is not exatcly with same named files!! mem leak
+			Runtime::Path sourcePath = path;
+			Runtime::Path targetPath = COOKED_ASSET_DIR / Runtime::Path(path).ReplaceExtension(ASSET_EXTENSION);
+			AssetHandle assetID;
+			assetID.index = _assets.size(); // HASH amk
 
 			if (AssetInCache(assetID)) {
 				Logger::Info("AssetSubsystem", "Asset in registry loading...");
@@ -33,8 +35,8 @@ namespace Tourqe::Engine {
 					AssetSource source;
 					source.handle = assetID;
 					source.type = assetType;
-					source.sourcePath = sourcePath.string();
-					source.cookedPath = targetPath.string();
+					source.sourcePath = sourcePath.GetPathStr();
+					source.cookedPath = targetPath.GetPathStr();
 
 					Runtime::Result result = streamer->Cook(source);
 					if (result) {
@@ -51,25 +53,25 @@ namespace Tourqe::Engine {
 			return nullptr;
 		}
 
-		Asset* TryAsset(Runtime::UUID uuid) {
-			if (!_assets.contains(uuid)) return nullptr;
-			return _assets[uuid];
+		Asset* TryAsset(AssetHandle handle) {
+			if (!_assets.contains(handle)) return nullptr;
+			return _assets[handle];
 		}
 	private:
-		Asset* Load(Runtime::UUID id);
-		void Unload(Runtime::UUID id);
+		Asset* Load(AssetHandle handle);
+		void Unload(AssetHandle handle);
 
 		AssetStreamer* GetAssetCookerOfType(const std::string& type);
-		b8 AssetInCache(Runtime::UUID id);
-		b8 AssetLoaded(Runtime::UUID id);
+		b8 AssetInCache(AssetHandle handle);
+		b8 AssetLoaded(AssetHandle handle);
 		void SaveRegistry();
 		void LoadRegistry();
 		
-		std::unordered_map<Runtime::UUID, AssetSource> _cachedAssetSources;
+		std::unordered_map<AssetHandle, AssetSource> _cachedAssetSources;
 
 		std::vector<AssetStreamer*> _assetStreamers;
 		std::unordered_map<std::string, u32> _assetStreamerLookupTable;
 
-		std::unordered_map<Runtime::UUID, Asset*> _assets;
+		std::unordered_map<AssetHandle, Asset*> _assets;
 	};
 }

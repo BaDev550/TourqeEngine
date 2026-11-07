@@ -1,18 +1,19 @@
-#include <Engine/Window/WindowSubsystem.h>
+#include <Engine/Platform/Window/WindowSubsystem.h>
+#include <Engine/Platform/PlatformSystem.h>
 #include <Engine/Core/Engine.h>
-#include <Engine/MT/JobSystem.h>
 
 namespace Tourqe::Engine {
 	Runtime::Result WindowSubsystem::OnCreate(Engine* engine)
 	{
 		Subsystem::OnCreate(engine);
+		auto platform = engine->GetPlatformSystem()->GetPlatform();
 
 		Runtime::PAL::WindowDesc desc{};
 		desc.width = 800;
 		desc.height = 800;
 		desc.title = "Engine Debug Window";
-		_window = Runtime::PAL::CreateNewWindow(desc);
-		if (!_window) Runtime::Result("Failed to create window");
+		_window = platform->CreateNewWindow(desc);
+		if (!_window) return Runtime::Result("Failed to create window");
 
 		return Runtime::Result();
 	}

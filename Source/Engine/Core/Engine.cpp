@@ -2,6 +2,7 @@
 #include <Runtime/Definitions/Logger.h>
 
 #include <Engine/Reflection/ReflectionSystem.h>
+#include <Engine/Platform/PlatformSystem.h>
 #include <Engine/Plugin/PluginSystem.h>
 #include <Engine/MT/JobSystem.h>
 
@@ -16,6 +17,7 @@ namespace Tourqe::Engine {
 		_instance = this;
 		Logger::Info("Engine", "Created");
 
+		_platformSystem = Runtime::Mem::Allocator::Construct<PlatformSystem>();
 		_pluginSystem = Runtime::Mem::Allocator::Construct<PluginSystem>();
 		_reflectionSystem = Runtime::Mem::Allocator::Construct<ReflectionSystem>();
 		_jobSystem = Runtime::Mem::Allocator::Construct<JobSystem>();
@@ -25,6 +27,7 @@ namespace Tourqe::Engine {
 		Runtime::Mem::Allocator::Destroy(_jobSystem);
 		Runtime::Mem::Allocator::Destroy(_reflectionSystem);
 		Runtime::Mem::Allocator::Destroy(_pluginSystem);
+		Runtime::Mem::Allocator::Destroy(_platformSystem);
 	}
 
 	void Engine::Run() {

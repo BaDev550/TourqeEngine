@@ -1,7 +1,7 @@
 #include "SceneRenderer2D.h"
 
 #include <Engine/Asset/AssetSubsystem.h>
-#include <Engine/Window/WindowSubsystem.h>
+#include <Engine/Platform/Window/WindowSubsystem.h>
 #include <Engine/Graphics/GraphicsSubsystem.h>
 #include <Engine/Asset/Shader/Shader.h>
 
@@ -88,5 +88,15 @@ namespace Tourqe::Engine {
 
 	void SceneRenderer2DSystem::OnDestroy() {
 		auto renderSystem = _engine->GetSubsystem<GraphicsSubsystem>();
+		renderSystem->GetContext()->WaitDeviceIdle();
+
+		_forwardRenderPass->OnDestroy();
+		Mem::Allocator::Destroy(_forwardRenderPass);
+
+		for (auto& fdb : _frameDataBuffers) {
+			Runtime::Mem::Allocator::Destroy(fdb);
+		}
+
+		Mem::Allocator::Destroy(_spriteBuffer);
 	}
 }

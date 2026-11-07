@@ -1,7 +1,7 @@
 #include <Engine/Core/Engine.h>
 
 #include <Engine/Graphics/GraphicsSubsystem.h>
-#include <Engine/Window/WindowSubsystem.h>
+#include <Engine/Platform/Window/WindowSubsystem.h>
 #include <Engine/Widget/WidgetSubsystem.h>
 #include <Engine/Asset/AssetSubsystem.h>
 #include <Engine/World/WorldSubsystem.h>

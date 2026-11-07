@@ -2,11 +2,11 @@
 
 #include <Runtime/RHI/ImGui/ImGuiContext.h>
 #include <Runtime/PAL/Window/Window.h>
-#include <Runtime/PAL/ImGuiPlatform.h>
 #include <vulkan/vulkan.h>
 
 namespace Runtime::RHI {
 	class VulkanContext;
+	class VulkanQueue;
 
 	class VulkanImGuiContext final : public ImGuiContext {
 	public:
@@ -14,11 +14,12 @@ namespace Runtime::RHI {
 		~VulkanImGuiContext();
 
 		virtual void Begin() const final;
+		virtual void CreateContext() final;
+		virtual void CreateNativeImGui() final;
 		virtual void Flush(Runtime::RHI::CommandBuffer* cmd) const final;
 	private:
 		VulkanContext& _owner;
+		VulkanQueue* _queue;
 		VkDescriptorPool _imguiDescriptorPool;
-
-		PAL::ImGuiPlatform* _PALContext;
 	};
 }

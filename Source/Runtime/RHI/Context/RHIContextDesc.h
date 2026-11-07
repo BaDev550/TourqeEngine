@@ -1,6 +1,7 @@
 #pragma once
 #include <Engine/Core/Core.h>
 #include <Runtime/PAL/Window/Window.h>
+#include <Runtime/PAL/PlatformContext.h>
 
 namespace Runtime::RHI {
 	struct ContextDesc {

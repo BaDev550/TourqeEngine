@@ -1,13 +1,14 @@
 #include "GraphicsSubsystem.h"
 #include <Engine/Core/Engine.h>
+
 #include <Engine/Reflection/ReflectionSystem.h>
-#include <Engine/Window/WindowSubsystem.h>
+#include <Engine/Platform/Window/WindowSubsystem.h>
+#include <Engine/Platform/PlatformSystem.h>
 #include <Engine/Asset/AssetSubsystem.h>
 
 #include <Runtime/Definitions/Profiler.h>
 
 #include <queue>
-
 #include <imgui.h>
 
 namespace Tourqe::Engine {
@@ -15,6 +16,7 @@ namespace Tourqe::Engine {
 		Subsystem::OnCreate(engine);
 
 		auto window = engine->GetSubsystem<WindowSubsystem>()->GetWindow();
+		auto platform = engine->GetPlatformSystem()->GetPlatform();
 		if (!window) { return Result("Failed to find window"); }
 
 		BEGIN_SCOPE(RHIInitilization)
@@ -33,7 +35,7 @@ namespace Tourqe::Engine {
 		contextDesc.features.samplerAnisotropy = true;
 		contextDesc.platformDesc.windowHandle = window->GetHandle();
 		contextDesc.platformDesc.instance = window->GetInstance();
-		contextDesc.platformDesc.platform = window->GetPlatform();
+		contextDesc.platformDesc.platform = platform->GetPlatform();
 		_context = RHI::CreateContext(contextDesc);
 		if (!_context) 
 			return Result("Failed to create context");
@@ -46,9 +48,14 @@ namespace Tourqe::Engine {
 		if (!_swapchain) 
 			return Result("Failed to create swapchain");
 
-		_imguiContext = _context->CreateImGuiContext();
-		if (!_imguiContext) 
-			return Result("Failed to create imgui context");
+		{
+			_imguiContext = _context->CreateImGuiContext();
+			_imguiContext->CreateContext();
+			platform->ImGuiCreateContext(reinterpret_cast<void*>(contextDesc.platformDesc.windowHandle));
+			_imguiContext->CreateNativeImGui();
+			if (!_imguiContext)
+				return Result("Failed to create imgui context");
+		}
 
 		{
 			for (auto& fd : _frames) {
@@ -146,6 +153,8 @@ namespace Tourqe::Engine {
 
 		_context->WaitDeviceIdle();
 
+		auto platform = _engine->GetPlatformSystem()->GetPlatform();
+
 		Mem::Allocator::Destroy<RHI::Image>(_defaultWhiteImage);
 
 		for (auto& fence : _renderFinishedFences) { Mem::Allocator::Destroy<RHI::Fence>(fence); }
@@ -157,6 +166,7 @@ namespace Tourqe::Engine {
 
 		Mem::Allocator::Destroy<RHI::Fence>(_timelineFence);
 		Mem::Allocator::Destroy<RHI::Swapchain>(_swapchain);
+		platform->ImGuiDestroyContext();
 		Mem::Allocator::Destroy(_imguiContext);
 		_context->Shutdown();
 		Mem::Allocator::Destroy<RHI::Context>(_context);

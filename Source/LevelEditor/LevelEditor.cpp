@@ -22,8 +22,8 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 	auto context = renderSystem->GetContext();
 
 	//ImGui::SetCurrentContext(context->GetImGuiContext());
-	Texture2D* guventexture = assetSystem->Get<Texture2D>("guven-catak.jpg");
-	Texture2D* barbarostexture = assetSystem->Get<Texture2D>("barbaros-bostan.jpg");
+	Texture2D* boxtexture = assetSystem->Get<Texture2D>("test_box.jpg");
+	Texture2D* rocktexture = assetSystem->Get<Texture2D>("test_rock.jpg");
 
 	{
 		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
@@ -33,7 +33,7 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 		tc->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 		tc->scale = glm::vec3(5.0f, 5.0f, 5.0f);
 
-		sc->TextureAssetHandle = guventexture->GetAssetHandle();
+		sc->TextureAssetHandle = boxtexture->GetAssetHandle();
 		sc->Visible = true;
 	}
 	{
@@ -44,7 +44,7 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 		tc->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 		tc->scale = glm::vec3(-2.0f, 2.0f, 2.0f);
 
-		sc->TextureAssetHandle = barbarostexture->GetAssetHandle();
+		sc->TextureAssetHandle = rocktexture->GetAssetHandle();
 		sc->Visible = true;
 	}
 	{
@@ -55,7 +55,7 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 		tc->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 		tc->scale = glm::vec3(2.0f, 2.0f, 2.0f);
 
-		sc->TextureAssetHandle = barbarostexture->GetAssetHandle();
+		sc->TextureAssetHandle = rocktexture->GetAssetHandle();
 		sc->Visible = true;
 	}
     return Runtime::Result();

@@ -12,6 +12,8 @@ namespace Runtime::RHI {
 		ImGuiContext& operator=(const ImGuiContext&) = delete;
 
 		virtual void Begin() const = 0;
+		virtual void CreateContext() = 0;
+		virtual void CreateNativeImGui() = 0;
 		virtual void Flush(Runtime::RHI::CommandBuffer* cmd) const = 0;
 	};
 }
