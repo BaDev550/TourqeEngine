@@ -1,7 +1,7 @@
 #include "VulkanContext.h"
 
 #include <Runtime/Definitions/Logger.h>
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 
 #include <Runtime/Vulkan/VulkanSwapchain.h>
 #include <Runtime/Vulkan/VulkanFence.h>

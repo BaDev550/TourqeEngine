@@ -8,6 +8,7 @@ namespace Runtime::Reflection {
 }
 
 #define TCLASS(...)
+#define TSTRUCT(...) // TODO(0x): implement struct reflection support
 #define TPROP(...)
 
 #define GENERATE_CLASS(ClassType) \

@@ -1,6 +1,6 @@
 #pragma once
 #include <Runtime/Definitions/Types.h>
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 #include <Runtime/PAL/Window/Window.h>
 #include <Engine/Subsystem/Subsystem.h>
 #include <vector>

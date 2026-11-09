@@ -70,8 +70,11 @@ namespace Tourqe::Engine {
 				Texture2D* asset = static_cast<Texture2D*>(assetSystem->TryAsset(sprite.TextureAssetHandle));
 				if (!asset) return;
 
-				transform.world = glm::translate(glm::mat4(1.0f), transform.position) * glm::scale(glm::mat4(1.0f), transform.scale);
-
+				transform.world = 
+					Runtime::Math::Mat4::Translation(transform.position) * 
+					Runtime::Math::Mat4::Rotate(transform.rotation) * 
+					Runtime::Math::Mat4::Scale(transform.scale);
+				
 				RenderItem item{};
 				item.textureID = asset->_image->GetBindlessIndex();
 				item.samplerID = asset->_image->GetSamplerIndex();

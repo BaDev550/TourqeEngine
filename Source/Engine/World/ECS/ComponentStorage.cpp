@@ -1,6 +1,6 @@
 #include "ComponentStorage.h"
 
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 #include <Runtime/Definitions/Logger.h>
 
 namespace Tourqe::Engine {

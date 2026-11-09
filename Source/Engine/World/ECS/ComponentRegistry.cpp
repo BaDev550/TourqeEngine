@@ -1,7 +1,7 @@
 #include "ComponentRegistry.h"
 
 #include <Runtime/Definitions/Logger.h>
-#include <Runtime/Memory/Memory.h> // memory ismini sikicem
+#include <Runtime/Memory/Allocator.h> // memory ismini sikicem
 
 namespace Tourqe::Engine {
 	ComponentRegistry::~ComponentRegistry() {

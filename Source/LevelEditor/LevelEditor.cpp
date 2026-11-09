@@ -13,6 +13,7 @@
 #include <imgui.h>
 
 using namespace Tourqe::Engine;
+using namespace Runtime;
 
 Runtime::Result LevelEditor::OnCreate(Engine* engine) {
     Subsystem::OnCreate(engine);
@@ -29,9 +30,9 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
 		TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
 		SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
-		tc->position = glm::vec3(0.0f, 0.0f, 0.0f);
-		tc->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-		tc->scale = glm::vec3(5.0f, 5.0f, 5.0f);
+		tc->position = Math::Vec3(0.0f, 0.0f, 0.0f);
+		tc->rotation = Math::Vec3(0.0f, 0.0f, 0.0f);
+		tc->scale = Math::Vec3(5.0f, 5.0f, 5.0f);
 
 		sc->TextureAssetHandle = boxtexture->GetAssetHandle();
 		sc->Visible = true;
@@ -40,9 +41,9 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
 		TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
 		SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
-		tc->position = glm::vec3(7.0f, 0.0f, 0.0f);
-		tc->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-		tc->scale = glm::vec3(-2.0f, 2.0f, 2.0f);
+		tc->position = Math::Vec3(7.0f, 0.0f, 0.0f);
+		tc->rotation = Math::Vec3(0.0f, 0.0f, 0.0f);
+		tc->scale = Math::Vec3(-2.0f, 2.0f, 2.0f);
 
 		sc->TextureAssetHandle = rocktexture->GetAssetHandle();
 		sc->Visible = true;
@@ -51,9 +52,9 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
 		TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
 		SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
-		tc->position = glm::vec3(-7.0f, 0.0f, 0.0f);
-		tc->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-		tc->scale = glm::vec3(2.0f, 2.0f, 2.0f);
+		tc->position = Math::Vec3(-7.0f, 0.0f, 0.0f);
+		tc->rotation = Math::Vec3(0.0f, 0.0f, 0.0f);
+		tc->scale = Math::Vec3(2.0f, 2.0f, 2.0f);
 
 		sc->TextureAssetHandle = rocktexture->GetAssetHandle();
 		sc->Visible = true;

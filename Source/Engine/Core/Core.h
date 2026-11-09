@@ -2,16 +2,10 @@
 #include <Runtime/Definitions/Types.h>
 #include <iostream>
 
-#ifdef _WIN32 // TODO(0x): move this to CMake
-#ifdef ENGINE_EXPORTS
-#define ENGINE_API __declspec(dllexport)
-#else
-#define ENGINE_API __declspec(dllimport)
-#endif
-#endif
-
+#ifdef _DEBUG
 #define ASSETMANAGER_DEBUG 1
 #define RHI_OBJECT_DECONSTRUCT_DEBUG 1
+#endif
 
 #define ASSET_MAGIC 0x41534554 // ASET
 #define SHADER_MAGIC 0x53484452 // SHDR

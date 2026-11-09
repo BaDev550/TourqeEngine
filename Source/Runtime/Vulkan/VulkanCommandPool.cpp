@@ -3,7 +3,7 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanUtils.h"
 
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 
 namespace Runtime::RHI {
     VulkanCommandPool::VulkanCommandPool(Context* context, const CommandPoolDesc& desc) : CommandPool(context), _desc(desc) {}

@@ -2,11 +2,11 @@
 
 #include <Runtime/Definitions/Types.h>
 #include <Runtime/RHI/Buffer/RHIBuffer.h>
-#include <glm/glm.hpp>
+#include <Runtime/Math/Mat4.h>
 
 namespace Tourqe::Engine {
 	struct RenderItem {
-		glm::mat4 world = glm::mat4(1.0f);
+		Runtime::Math::Mat4 world = Runtime::Math::Mat4();
 
 		u32 textureID = 0;
 		u32 samplerID = 0;

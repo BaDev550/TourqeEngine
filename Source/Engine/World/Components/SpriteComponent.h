@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Engine/World/Components/BaseComponent.h>
-#include <Runtime/Definitions/UUID.h>
+#include <Runtime/Containers/UUID.h>
 
 namespace Tourqe::Engine {
 	TCLASS();

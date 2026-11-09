@@ -1,5 +1,5 @@
 #pragma once
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 
 namespace Runtime::Mem {
 	class RefCounted {

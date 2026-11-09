@@ -7,5 +7,6 @@ find_package(imgui CONFIG REQUIRED)
 target_include_directories(LevelEditor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(LevelEditor PRIVATE
 	Engine
+	Runtime
 	imgui::imgui
 )

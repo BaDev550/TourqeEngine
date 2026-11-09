@@ -1,7 +1,7 @@
 #include <Runtime/Vulkan/VulkanSwapchain.h>
 #include <Runtime/Vulkan/VulkanContext.h>
 #include <Runtime/Vulkan/VulkanFence.h>
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 #include <algorithm>
 
 namespace Runtime::RHI {

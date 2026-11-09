@@ -2,7 +2,7 @@
 
 #include <Runtime/Definitions/Types.h>
 #include <Runtime/Definitions/Logger.h>
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 #include <functional>
 #include <typeindex>
 #include <string>

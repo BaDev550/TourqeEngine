@@ -4,7 +4,7 @@
 #include <Engine/Reflection/ReflectionSystem.h>
 #include <Engine/Graphics/GraphicsSubsystem.h>
 #include <Engine/World/WorldSubsystem.h>
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 
 #include <imgui.h>
 

@@ -2,6 +2,7 @@
 
 #include <Engine/Render/RenderPass.h>
 #include <Runtime/RHI/Pipeline/RHIPipeline.h>
+#include <Runtime/Math/Mat4.h>
 
 namespace Tourqe::Engine {
 	TCLASS();
@@ -16,7 +17,7 @@ namespace Tourqe::Engine {
 		virtual RenderStage GetStage() const final { return RenderStage::Scene; }
 	private:
 		struct SpritePushConstant {
-			glm::mat4 world;
+			Runtime::Math::Mat4 world;
 			u32 frameDataIndex;
 			u32 firstVertex;
 			u32 vertexBufferID;

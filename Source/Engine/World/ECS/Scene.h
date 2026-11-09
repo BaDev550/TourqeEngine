@@ -3,7 +3,7 @@
 #include <Engine/World/ECS/ComponentRegistry.h>
 #include <Engine/World/ECS/ComponentStorage.h>
 
-#include <Runtime/Definitions/UUID.h>
+#include <Runtime/Containers/UUID.h>
 #include <unordered_map>
 
 namespace Tourqe::Engine {

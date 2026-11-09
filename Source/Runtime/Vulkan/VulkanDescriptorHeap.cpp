@@ -3,7 +3,7 @@
 #include "VulkanContext.h"
 #include "VulkanUtils.h"
 
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 
 namespace Runtime::RHI {
     VulkanDescriptorHeap::VulkanDescriptorHeap(VulkanContext* context, const DescriptorHeapDesc& desc) : DescriptorHeap(context), _desc(desc) { }

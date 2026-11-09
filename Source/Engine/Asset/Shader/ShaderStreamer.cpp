@@ -2,7 +2,7 @@
 
 #include <Engine/Asset/Asset.h>
 #include <Runtime/Definitions/Profiler.h>
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 #include <Runtime/IO/FileBuffer.h>
 #include <fstream>
 #include <filesystem>

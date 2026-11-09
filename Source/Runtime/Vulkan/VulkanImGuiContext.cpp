@@ -3,7 +3,7 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanContext.h"
 
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 
 #include <imgui.h>
 #include <imgui_internal.h>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Runtime/Definitions/Types.h>
-#include <Runtime/Definitions/UUID.h>
+#include <Runtime/Containers/UUID.h>
 #include <bitset>
 
 namespace Tourqe::Engine {

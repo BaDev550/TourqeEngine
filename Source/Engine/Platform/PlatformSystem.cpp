@@ -1,5 +1,5 @@
 #include "PlatformSystem.h"
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 
 namespace Tourqe::Engine {
 	PlatformSystem::PlatformSystem() {

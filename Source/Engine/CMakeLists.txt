@@ -12,7 +12,14 @@ find_package(nlohmann_json REQUIRED)
 
 find_path(MIO_INCLUDE_DIR NAMES mio/mmap.hpp REQUIRED)
 
-target_compile_definitions(Engine PRIVATE ENGINE_EXPORTS)
+target_compile_definitions(Engine 
+    PRIVATE 
+        ENGINE_EXPORTS
+        "ENGINE_API=__declspec(dllexport)"
+    INTERFACE
+        "ENGINE_API=__declspec(dllimport)"
+)
+
 target_include_directories(Engine 
     PUBLIC 
         "${CMAKE_SOURCE_DIR}/Source" 

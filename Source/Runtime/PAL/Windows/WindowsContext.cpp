@@ -1,6 +1,6 @@
 #include <Runtime/PAL/Windows/WindowsContext.h>
 #include <Runtime/PAL/Windows/WindowsWindow.h>
-#include <Runtime/Memory/Memory.h>
+#include <Runtime/Memory/Allocator.h>
 #include <Runtime/Definitions/Logger.h>
 #include <Runtime/Definitions/Profiler.h>
 
