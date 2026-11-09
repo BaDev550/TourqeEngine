@@ -26,54 +26,8 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 	Texture2D* boxtexture = assetSystem->Get<Texture2D>("warrior_bg.jpg");
 	Texture2D* rocktexture = assetSystem->Get<Texture2D>("player_sprite.png");
 	Texture2D* transparenttexture = assetSystem->Get<Texture2D>("Org.png");
+	Texture2D* guvenTexture = assetSystem->Get<Texture2D>("guvenhead.png");
 
-	{
-		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
-		IdenityComponent* ic = worldSystem->GetActiveScene()->AddComponent<IdenityComponent>(entity1);
-		TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
-		SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
-		ic->name = "BOX_ColorTest";
-		ic->uuid = UUID();
-
-		tc->position = Math::Vec3(0.0f, 0.0f, 0.0f);
-		tc->rotation = Math::Vec3(0.0f, 0.0f, 0.0f);
-		tc->scale = Math::Vec3(19.2f, 10.4f, 5.0f);
-
-		tc->SetRotation(Math::Vec3(0.0f, 0.0f, 0.0f));
-
-		sc->TextureAssetHandle = boxtexture->GetAssetHandle();
-		sc->Visible = true;
-	}
-	{
-		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
-		IdenityComponent* ic = worldSystem->GetActiveScene()->AddComponent<IdenityComponent>(entity1);
-		TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
-		SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
-		ic->name = "PIXELART_ColorTest";
-		ic->uuid = UUID();
-
-		tc->position = Math::Vec3(-2.5f, -3.2f, 0.0f);
-		tc->rotation = Math::Vec3(0.0f, 0.0f, 0.0f);
-		tc->scale = Math::Vec3(-2.0f, 2.0f, 2.0f);
-
-		sc->TextureAssetHandle = rocktexture->GetAssetHandle();
-		sc->Visible = true;
-	}
-	{
-		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
-		IdenityComponent* ic = worldSystem->GetActiveScene()->AddComponent<IdenityComponent>(entity1);
-		TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
-		SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
-		ic->name = "PIXELART_TransparentTest";
-		ic->uuid = UUID();
-
-		tc->position = Math::Vec3(3.1f, -1.7f, 0.0f);
-		tc->rotation = Math::Vec3(0.0f, 0.0f, 0.0f);
-		tc->scale = Math::Vec3(5.0f, 5.0f, 5.0f);
-
-		sc->TextureAssetHandle = transparenttexture->GetAssetHandle();
-		sc->Visible = true;
-	}
     return Runtime::Result();
 }
 

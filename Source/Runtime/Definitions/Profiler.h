@@ -9,7 +9,7 @@
 namespace Runtime {
 	class Profiler final {
 	public:
-		static Profiler& Get() {
+		static Profiler& Get() { // FIXME(0x): needs to moved into a engine class or a subsystem
 			static Profiler instance;
 			return instance;
 		}

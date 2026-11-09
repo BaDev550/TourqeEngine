@@ -2,6 +2,7 @@
 #include <Engine/World/ECS/EntityFactory.h>
 #include <Engine/World/ECS/ComponentRegistry.h>
 #include <Engine/World/ECS/ComponentStorage.h>
+#include <Engine/Scripting/GameObject.h>
 
 #include <Runtime/Containers/UUID.h>
 #include <unordered_map>
