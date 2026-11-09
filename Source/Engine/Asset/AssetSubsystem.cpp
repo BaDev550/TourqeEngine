@@ -1,6 +1,5 @@
 #include "AssetSubsystem.h"
 #include <Engine/Core/Engine.h>
-#include <Runtime/IO/FileBuffer.h>
 #include <Runtime/Memory/Allocator.h>
 #include <Engine/Reflection/ReflectionSystem.h>
 

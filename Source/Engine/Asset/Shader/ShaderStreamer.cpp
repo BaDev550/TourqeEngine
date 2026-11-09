@@ -1,19 +1,23 @@
 #include "ShaderStreamer.h"
+#include <Engine/Core/Engine.h>
 
 #include <Engine/Asset/Asset.h>
-#include <Runtime/Definitions/Profiler.h>
 #include <Runtime/Memory/Allocator.h>
-#include <Runtime/IO/FileBuffer.h>
+#include <Runtime/Definitions/Profiler.h>
+
+#include <Engine/Platform/PlatformSystem.h>
+#include <Runtime/IO/Path.h>
+
 #include <fstream>
-#include <filesystem>
 
 namespace Tourqe::Engine {
 	Runtime::Result ShaderStreamer::Cook(AssetSource& source) { // TEMP!!!!! FIX IT FUCKED UP RHI
 		if (source.sourcePath.empty()) {
 			return Runtime::Result("No source file provided!");
 		}
+		auto platform = Engine::Get()->GetPlatformSystem()->GetPlatform();
 
-		std::string extension = std::filesystem::path(source.sourcePath).extension().string();
+		std::string extension = Runtime::Path(source.sourcePath).GetExtension();
 
 		shaderc_shader_kind kind;
 		if (extension == ".vert")      kind = shaderc_vertex_shader;
@@ -24,9 +28,8 @@ namespace Tourqe::Engine {
 			return Runtime::Result("Unsupported shader extension: " + extension);
 		}
 
-		Runtime::IO::FileBuffer shaderBuffer;
 		std::vector<u8> rawData;
-		shaderBuffer.Map(source.sourcePath, rawData);
+		platform->MapFile(source.sourcePath, rawData);
 
 		std::string sourceStr(rawData.begin(), rawData.end());
 
@@ -56,17 +59,18 @@ namespace Tourqe::Engine {
 		header.dataSize = static_cast<u64>(sprivByteSize);
 		header.dataOffset = sizeof(AssetHeader);
 
-		shaderBuffer.WriteBinary(source.cookedPath, &header, header.metaSize);
-		shaderBuffer.WriteBinary(source.cookedPath, sprivCode.data(), header.dataSize, header.dataOffset);
-
+		platform->WriteToFile(source.cookedPath, &header, header.metaSize);
+		platform->WriteToFile(source.cookedPath, sprivCode.data(), header.dataSize, header.dataOffset);
+		
 		Logger::Info("ShaderStreamer", "Cooked to loc: {}", std::filesystem::absolute(source.cookedPath).string());
 
 		return Runtime::Result();
 	}
 
     Asset* ShaderStreamer::Import(AssetSource& source) {
-		Runtime::IO::FileBuffer shaderBuffer;
-		std::vector fulldata = shaderBuffer.ReadBinary(source.cookedPath);
+		auto platform = Engine::Get()->GetPlatformSystem()->GetPlatform();
+
+		std::vector<u8> fulldata = platform->ReadFromFile(source.cookedPath);
 
 		if (fulldata.size() < sizeof(AssetHeader)) {
 			Logger::Error("ShaderStreamer", "Corrupted shader file (too small): {}", source.cookedPath);

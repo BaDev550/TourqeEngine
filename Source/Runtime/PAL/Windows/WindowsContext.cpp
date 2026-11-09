@@ -24,7 +24,7 @@ namespace Runtime::PAL {
 	}
 	void WindowsContext::ImGuiNewFrame() { ImGui_ImplWin32_NewFrame(); }
 
-	Result WindowsContext::WriteToFile(const Path & filePath, char* data, usize dataSize, usize dataOffset) {
+	Result WindowsContext::WriteToFile(const Path& filePath, void* data, usize dataSize, usize dataOffset) {
 		if (dataSize == 0) {
 			Logger::Warn("WindowsIO", "Data size is 0, nothing to write");
 			return Result("Data size is 0");
@@ -47,7 +47,7 @@ namespace Runtime::PAL {
 		}
 	}
 
-	Result WindowsContext::WriteToFile(const Path& filePath, const std::vector<u8>& data, usize dataOffset) { return WriteToFile(filePath, const_cast<char*>(reinterpret_cast<const char*>(data.data())), data.size(), dataOffset); }
+	Result WindowsContext::WriteToFile(const Path& filePath, const std::vector<u8>& data, usize dataSize, usize dataOffset) { return WriteToFile(filePath, const_cast<char*>(reinterpret_cast<const char*>(data.data())), dataSize, dataOffset); }
 
 	std::vector<u8> WindowsContext::ReadFromFile(const Path& filePath) {
 		if (!FileExists(filePath)) {

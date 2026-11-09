@@ -23,6 +23,11 @@ namespace Runtime {
 			return *this;
 		}
 
+		std::string GetExtension() {
+			usize pos = _path.find_last_of(".");
+			if (pos != std::string::npos) { return _path.substr(0, (_path.length() - pos)); }
+			return "";
+		}
 		std::string GetParentDirectory() const {
 			usize pos = _path.find_last_of("/\\");
 			if (pos != std::string::npos) { return _path.substr(0, pos); }

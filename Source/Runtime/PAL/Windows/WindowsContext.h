@@ -16,8 +16,8 @@ namespace Runtime::PAL {
 		virtual void ImGuiDestroyContext() final;
 		virtual void ImGuiNewFrame() final;
 
-		virtual Result WriteToFile(const Path& filePath, char* data, usize dataSize, usize dataOffset = 0) final;
-		virtual Result WriteToFile(const Path& filePath, const std::vector<u8>& data, usize dataOffset = 0) final;
+		virtual Result WriteToFile(const Path& filePath, void* data, usize dataSize, usize dataOffset = 0) final;
+		virtual Result WriteToFile(const Path& filePath, const std::vector<u8>& data, usize dataSize, usize dataOffset = 0) final;
 
 		virtual std::vector<u8> ReadFromFile(const Path& filePath) final;
 		virtual Result MapFile(const Path& filePath, std::vector<u8>& mappedBuffer) final;

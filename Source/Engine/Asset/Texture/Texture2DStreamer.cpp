@@ -3,30 +3,31 @@
 #include <Engine/Core/Engine.h>
 #include <Engine/Asset/Asset.h>
 #include <Runtime/Definitions/Profiler.h>
-#include <Runtime/IO/FileBuffer.h>
 #include <filesystem>
 #include <fstream>
-#include <thread>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include <Engine/Graphics/GraphicsSubsystem.h>
+#include <Engine/Platform/PlatformSystem.h>
 #include <Runtime/RHI/Buffer/RHIBuffer.h>
 #include <Runtime/RHI/Image/RHIImage.h>
 #include <Runtime/RHI/Common/RHIUtils.h>
+
+#include <Runtime/IO/Path.h>
 
 namespace Tourqe::Engine {
     Runtime::Result Texture2DStreamer::Cook(AssetSource& source) {
         if (source.sourcePath.empty()) {
             return Runtime::Result("No source file provided!");
         }
-        
-        Runtime::IO::FileBuffer textureBuffer;
+		auto platform = Engine::Get()->GetPlatformSystem()->GetPlatform();
+
         int width, height, comp;
         std::vector<u8> rawData;
         std::vector<u8> compressedData;
-        textureBuffer.Map(source.sourcePath, rawData);
+        platform->MapFile(source.sourcePath, rawData);
         u8* rawImageData = stbi_load_from_memory(rawData.data(), (rawData.size() * sizeof(u8)), &width, &height, &comp, 4);
         
         CompressImageToBC3(rawImageData, width, height, compressedData);
@@ -50,17 +51,18 @@ namespace Tourqe::Engine {
         header.dataSize = (compressedData.size() * sizeof(u8));
         header.dataOffset = (sizeof(AssetHeader) + sizeof(Runtime::RHI::ImageDesc));
 
-        textureBuffer.WriteBinary(source.cookedPath, &header, sizeof(AssetHeader));
-        textureBuffer.WriteBinary(source.cookedPath, &imageDesc, sizeof(Runtime::RHI::ImageDesc), sizeof(AssetHeader));
-        textureBuffer.WriteBinary(source.cookedPath, compressedData.data(), header.dataSize, header.dataOffset);
+        platform->WriteToFile(source.cookedPath, &header, sizeof(AssetHeader));
+        platform->WriteToFile(source.cookedPath, &imageDesc, sizeof(Runtime::RHI::ImageDesc), sizeof(AssetHeader));
+        platform->WriteToFile(source.cookedPath, compressedData.data(), header.dataSize, header.dataOffset);
         Logger::Info("Texture2DCooker", "Texture cooked to loc: {}", std::filesystem::absolute(source.cookedPath).string());
 
         return Runtime::Result();
     }
 
     Asset* Texture2DStreamer::Import(AssetSource& source) {
-        Runtime::IO::FileBuffer textureBuffer;
-        std::vector<u8> fulldata = textureBuffer.ReadBinary(source.cookedPath);
+        auto platform = Engine::Get()->GetPlatformSystem()->GetPlatform();
+
+        std::vector<u8> fulldata = platform->ReadFromFile(source.cookedPath);
 
         u32 magic;
         std::memcpy(&magic, fulldata.data(), sizeof(u32));
