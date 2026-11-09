@@ -12,7 +12,7 @@ namespace Tourqe::Engine {
 		u32 samplerID = 0;
 		u32 vertexBufferIndex = 0;
 		Runtime::RHI::Buffer* indexBuffer = nullptr;
-
+		
 		u32 firstVertex = 0;
 		u32 vertexCount = 0;
 		u32 firstIndex = 0;

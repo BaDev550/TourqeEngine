@@ -1,4 +1,5 @@
 #include "SceneRenderer2D.h"
+#include <Runtime/Definitions/Profiler.h>
 
 #include <Engine/Asset/AssetSubsystem.h>
 #include <Engine/Platform/Window/WindowSubsystem.h>
@@ -6,8 +7,11 @@
 #include <Engine/Asset/Shader/Shader.h>
 
 #include <Engine/World/ECS/Scene.h>
-#include <Engine/World/Components/SpriteComponent.h>
 #include <Engine/World/Components/TransformComponent.h>
+
+#include <Engine/World/Components/SpriteComponent.h>
+#include <Engine/Render/Sprite/SpriteData.h>
+#include <Engine/Render/Sprite/SpriteVertex.h>
 
 #include <imgui.h>
 
@@ -47,45 +51,49 @@ namespace Tourqe::Engine {
 		system->Submit([this, &scene](Runtime::RHI::CommandBuffer* cmd) {
 			auto assetSystem = _engine->GetSubsystem<AssetSubsystem>();
 			auto renderSystem = _engine->GetSubsystem<GraphicsSubsystem>();
+			
+			{
+				BEGIN_PROFILE_SCOPE("ScenePass");
 
-			RenderFrame frame{};
-			frame.cmd = cmd;
-			frame.color = renderSystem->GetSwapchain()->GetColorAttachments()[renderSystem->GetImageIndex()];
-			frame.depth = renderSystem->GetSwapchain()->GetDepthAttachment();
-			frame.extent = renderSystem->GetSwapchain()->GetExtent();
-			frame.frameIndex = renderSystem->GetFrameIndex();
+				RenderFrame frame{};
+				frame.cmd = cmd;
+				frame.color = renderSystem->GetSwapchain()->GetColorAttachments()[renderSystem->GetImageIndex()];
+				frame.depth = renderSystem->GetSwapchain()->GetDepthAttachment();
+				frame.extent = renderSystem->GetSwapchain()->GetExtent();
+				frame.frameIndex = renderSystem->GetFrameIndex();
 
-			const f32 aspect = frame.extent.x / frame.extent.y;
-			const f32 halfH = 5.0f;
-			glm::mat4 viewProj = glm::orthoRH_ZO(-halfH * aspect, halfH * aspect, -halfH, halfH, -1.0f, 1.0f);
-			viewProj[1][1] *= -1.0f;
+				const f32 aspect = frame.extent.x / frame.extent.y;
+				const f32 halfH = 5.0f;
+				glm::mat4 viewProj = glm::orthoRH_ZO(-halfH * aspect, halfH * aspect, -halfH, halfH, -1.0f, 1.0f);
+				viewProj[1][1] *= -1.0f;
 
-			_frameDataBuffers[frame.frameIndex]->Write(&viewProj);
-			frame.frameDataBufferIndex = _frameDataBuffers[frame.frameIndex]->GetBindlessIndex();
+				_frameDataBuffers[frame.frameIndex]->Write(&viewProj);
+				frame.frameDataBufferIndex = _frameDataBuffers[frame.frameIndex]->GetBindlessIndex();
 
-			scene.ForEach<TransformComponent, SpriteComponent>([&](EntityHandle entity, TransformComponent& transform, SpriteComponent& sprite) {
-				if (!sprite.Visible) return;
-				if (!sprite.TextureAssetHandle.IsValid()) return;
+				scene.ForEach<TransformComponent, SpriteComponent>([&](EntityHandle entity, TransformComponent& transform, SpriteComponent& sprite) {
+					if (!sprite.Visible) return;
+					if (!sprite.TextureAssetHandle.IsValid()) return;
 
-				Texture2D* asset = static_cast<Texture2D*>(assetSystem->TryAsset(sprite.TextureAssetHandle));
-				if (!asset) return;
+					Texture2D* asset = static_cast<Texture2D*>(assetSystem->TryAsset(sprite.TextureAssetHandle));
+					if (!asset) return;
 
-				transform.world = 
-					Runtime::Math::Mat4::Translation(transform.position) * 
-					Runtime::Math::Mat4::Rotate(transform.rotation) * 
-					Runtime::Math::Mat4::Scale(transform.scale);
-				
-				RenderItem item{};
-				item.textureID = asset->_image->GetBindlessIndex();
-				item.samplerID = asset->_image->GetSamplerIndex();
-				item.world = transform.world;
-				item.firstVertex = 0;
-				item.vertexCount = 6;
-				item.instanceCount = 1;
-				item.vertexBufferIndex = _spriteBuffer->GetBindlessIndex();
-				frame.queues.Push(RenderQueue::Sprite, item);
-				});
-			_forwardRenderPass->Execute(frame);
+					transform.world =
+						Runtime::Math::Mat4::Translation(transform.position) *
+						Runtime::Math::Mat4::Rotate(transform.rotation) *
+						Runtime::Math::Mat4::Scale(transform.scale);
+
+					RenderItem item{};
+					item.textureID = asset->_image->GetBindlessIndex();
+					item.samplerID = asset->_image->GetSamplerIndex();
+					item.world = transform.world;
+					item.firstVertex = 0;
+					item.vertexCount = 6;
+					item.instanceCount = 1;
+					item.vertexBufferIndex = _spriteBuffer->GetBindlessIndex();
+					frame.queues.Push(RenderQueue::Sprite, item);
+					});
+				_forwardRenderPass->Execute(frame);
+			}
 			});
 	}
 

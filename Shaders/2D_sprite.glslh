@@ -6,7 +6,8 @@ struct SpriteData {
 	uint frameDataIndex;
 	uint firstVertex;
 	uint vertexBufferID;
-	uint textureID;
+	uint diffuseTextureID;
+	uint normalTextureID;
 	uint samplerID;
 };
 

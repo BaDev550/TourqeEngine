@@ -16,21 +16,6 @@ namespace Tourqe::Engine {
 	private:
 		ForwardRenderPass* _forwardRenderPass;
 
-		struct Vertex {
-			glm::vec3 pos;
-			glm::vec3 norm;
-			glm::vec2 uv;
-		};
-
-		const Vertex SpriteVertices[6] = {
-			{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } }, // bottom-left
-			{ {  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f } }, // bottom-right
-			{ {  0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 0.0f } }, // top-right
-			{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } }, // bottom-left
-			{ {  0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 0.0f } }, // top-right
-			{ { -0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } }, // top-left
-		};
-
 		Runtime::RHI::Buffer* _frameDataBuffers[GraphicsSubsystem::MaxFramesInFlight];
 		Runtime::RHI::Buffer* _spriteBuffer;
 	};

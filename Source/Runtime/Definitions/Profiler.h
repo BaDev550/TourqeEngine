@@ -18,9 +18,7 @@ namespace Runtime {
 			_timings[name] = durationMs;
 		}
 
-		const std::unordered_map<std::string, double>& GetTimings() const {
-			return _timings;
-		}
+		const std::unordered_map<std::string, double>& GetTimings() const { return _timings; }
 	private:
 		std::unordered_map<std::string, double> _timings;
 	};

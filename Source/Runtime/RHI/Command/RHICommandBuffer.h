@@ -2,6 +2,7 @@
 
 #include <Runtime/RHI/Object/RHIObject.h>
 #include <Runtime/RHI/Image/RHIImageLayout.h>
+#include <Runtime/RHI/Pipeline/RHIPipelineBindPoint.h>
 #include <Runtime/RHI/Command/RHIRenderingSubmitInfo.h>
 
 namespace Runtime::RHI {
@@ -29,8 +30,9 @@ namespace Runtime::RHI {
 
 		virtual void DrawVertex(u32 count, u32 instances = 1) = 0;
 
-		virtual void BindPipeline(Pipeline* pipeline) = 0;
+		virtual void BindPipeline(Pipeline* pipeline, PipelineBindPoint point = PipelineBindPoint::Graphics) = 0;
 		virtual void PushConstant(Pipeline* pipeline, void* data, usize size, usize offset = 0) = 0;
 		virtual void BindDescriptorSet(Pipeline* pipeline, DescriptorSet* descriptor, u32 binding, u32 set) = 0;
+		virtual void Dispatch(u32 groupX, u32 groupY, u32 groupZ) = 0;
 	};
 }

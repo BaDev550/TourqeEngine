@@ -147,9 +147,9 @@ namespace Runtime::RHI {
 		vkCmdDraw(_commandBuffer, count, instances, 0, 0);
 	}
 
-	void VulkanCommandBuffer::BindPipeline(Pipeline* pipeline) {
+	void VulkanCommandBuffer::BindPipeline(Pipeline* pipeline, PipelineBindPoint point) {
 		VulkanPipeline* vkPipeline = static_cast<VulkanPipeline*>(pipeline);
-		vkCmdBindPipeline(_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline->GetVkPipeline());
+		vkCmdBindPipeline(_commandBuffer, Utils::GetVkPipelineBindPoint(point), vkPipeline->GetVkPipeline());
 	}
 
 	void VulkanCommandBuffer::PushConstant(Pipeline * pipeline, void* data, usize size, usize offset) {
@@ -172,5 +172,9 @@ namespace Runtime::RHI {
 			0,
 			nullptr
 		);
+	}
+
+	void VulkanCommandBuffer::Dispatch(u32 groupX, u32 groupY, u32 groupZ) {
+		vkCmdDispatch(_commandBuffer, groupX, groupY, groupZ);
 	}
 }

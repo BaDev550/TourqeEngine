@@ -19,7 +19,7 @@ void main() {
 	mat4 viewProj = LoadMat4(s.frameDataIndex, 0u);
 	mat4 world = s.world;
 
-	vTextureID = s.textureID;
+	vTextureID = s.diffuseTextureID;
 	vSamplerID = s.samplerID;
 	vNormal = mat3(world) * v.normal;
 	vUV = v.uv;

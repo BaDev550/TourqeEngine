@@ -88,7 +88,8 @@ namespace Tourqe::Engine {
 				spriteData.vertexBufferID = item.vertexBufferIndex;
 				spriteData.firstVertex = item.firstVertex;
 				spriteData.frameDataIndex = frame.frameDataBufferIndex;
-				spriteData.textureID = item.textureID;
+				spriteData.diffuseTextureID = item.textureID;
+				spriteData.normalTextureID = 0;
 				spriteData.samplerID = item.samplerID;
 
 				_spriteDatas[i] = spriteData;

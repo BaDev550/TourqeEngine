@@ -10,6 +10,7 @@
 #include <Runtime/RHI/Descriptor/RHIDescriptorType.h>
 #include <Runtime/RHI/Descriptor/RHIDescriptorHeapDesc.h>
 #include <Runtime/RHI/Descriptor/RHIDescriptorBinding.h>
+#include <Runtime/RHI/Pipeline/RHIPipelineBindPoint.h>
 
 #include <vulkan/vulkan.h>
 #include <vma/vk_mem_alloc.h>
@@ -40,6 +41,7 @@ namespace Runtime::RHI::Utils {
 		switch (layout)
 		{
 		case ImageLayout::Undefined: return VK_IMAGE_LAYOUT_UNDEFINED;
+		case ImageLayout::UnorderedAccess: return VK_IMAGE_LAYOUT_GENERAL;
 		case ImageLayout::PresentSrc: return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 		case ImageLayout::ColorAttachment: return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		case ImageLayout::DepthAttachment: return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
@@ -192,5 +194,17 @@ namespace Runtime::RHI::Utils {
 		if ((flags & DescriptorHeapCreateFlags::UpdateAfterBind) != DescriptorHeapCreateFlags::None) result |= VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
 		if ((flags & DescriptorHeapCreateFlags::FreeDescriptorSet) != DescriptorHeapCreateFlags::None) result |= VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 		return result;
+	}
+
+	constexpr [[nodiscard]] VkPipelineBindPoint GetVkPipelineBindPoint(PipelineBindPoint point) {
+		switch (point)
+		{
+		case Runtime::RHI::PipelineBindPoint::Graphics: return VK_PIPELINE_BIND_POINT_GRAPHICS;
+		case Runtime::RHI::PipelineBindPoint::Compute: return VK_PIPELINE_BIND_POINT_COMPUTE;
+		default:
+			Logger::Error("Vulkan RHI Utils", "Unknow binding point");
+			break;
+		}
+		return VK_PIPELINE_BIND_POINT_GRAPHICS;
 	}
 }

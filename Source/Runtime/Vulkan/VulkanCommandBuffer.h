@@ -23,9 +23,10 @@ namespace Runtime::RHI {
 
 		virtual void DrawVertex(u32 count, u32 instances = 0) override;
 
-		virtual void BindPipeline(Pipeline* pipeline) override;
+		virtual void BindPipeline(Pipeline* pipeline, PipelineBindPoint point = PipelineBindPoint::Graphics) override;
 		virtual void PushConstant(Pipeline* pipeline, void* data, usize size, usize offset = 0) override;
 		virtual void BindDescriptorSet(Pipeline* pipeline, DescriptorSet* descriptor, u32 binding, u32 set) override;
+		virtual void Dispatch(u32 groupX, u32 groupY, u32 groupZ) final;
 
 		[[nodiscard]] VkCommandBuffer GetVkCommandBuffer() const { return _commandBuffer; }
 	private:

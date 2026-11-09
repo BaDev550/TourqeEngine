@@ -1,6 +1,9 @@
 #pragma once
 
 #include <Engine/Render/RenderPass.h>
+#include <Engine/Render/Sprite/SpriteData.h>
+#include <Engine/Render/Sprite/SpriteMaterial.h>
+
 #include <Runtime/RHI/Pipeline/RHIPipeline.h>
 #include <Runtime/Math/Mat4.h>
 
@@ -27,9 +30,10 @@ namespace Tourqe::Engine {
 			u32 frameDataIndex;
 			u32 firstVertex;
 			u32 vertexBufferID;
-			u32 textureID;
+			u32 diffuseTextureID;
+			u32 normalTextureID;
 			u32 samplerID;
-			u32 pad[3];
+			u32 pad[2];
 		};
 
 		std::vector<SpriteData> _spriteDatas;

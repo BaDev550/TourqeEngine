@@ -4,6 +4,7 @@
 namespace Runtime::RHI {
 	enum class ImageLayout : u8 {
 		Undefined = 0,
+		UnorderedAccess,
 		PresentSrc,
 		TransferDst,
 		TransferSrc,
