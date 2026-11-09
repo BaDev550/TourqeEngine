@@ -29,6 +29,12 @@ namespace Tourqe::Engine {
 		TransformComponent(const Math::Vec3& pos, const Math::Quat& rot, const Math::Vec3& scl) : position(pos), rotation(rot), scale(scl) {}
 		TransformComponent(const Math::Vec3& pos, const Math::Vec3& rot, const Math::Vec3& scl) : position(pos), rotation(rot), scale(scl) {}
 		TransformComponent() : position({ 0.0f }), rotation({ 0.0f, 0.0f, 0.0f, 1.0f }), scale({ 1.0f }) {}
+
+		void SetRotation(const Math::Vec3& rot) {
+			rotationEuler = rot;
+			rotation = rotation.FromEuler(rotationEuler);
+		}
+
 	private:
 		TPROP();
 		Math::Vec3 rotationEuler;

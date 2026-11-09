@@ -4,7 +4,7 @@
 #include <limits>
 #include <iostream>
 
-#define PI 3.141592653589793
+#define PI 3.141592653589793f
 #define BIT(x) (1 << x)
 #define CORE_DEFINE_ENUM_FLAG_OPERATORS(Enum) \
     inline Enum operator|(Enum lhs, Enum rhs) { \

@@ -37,6 +37,7 @@ namespace Runtime::Math {
 		[[nodiscard]] const Quat Normalize() const {
 			f32 len = Length();
 			if (len > 0.0f) { return Quat(w / len, x / len, y / len, z / len); }
+			return *this;
 		}
 
 		[[nodiscard]] const Vec3 ToEuler() const {
@@ -58,12 +59,13 @@ namespace Runtime::Math {
 		}
 
 		[[nodiscard]] const Quat FromEuler(const Math::Vec3& eRot) const {
-			f64 cy = std::cos(eRot.z * 0.5f);
-			f64 sy = std::sin(eRot.z * 0.5f);
-			f64 cp = std::cos(eRot.y * 0.5f);
-			f64 sp = std::sin(eRot.y * 0.5f);
-			f64 cr = std::cos(eRot.x * 0.5f);
-			f64 sr = std::sin(eRot.x * 0.5f);
+			constexpr float DegToRad = PI / 180.0f;
+			f64 cy = std::cos(eRot.z * DegToRad * 0.5f);
+			f64 sy = std::sin(eRot.z * DegToRad * 0.5f);
+			f64 cp = std::cos(eRot.y * DegToRad * 0.5f);
+			f64 sp = std::sin(eRot.y * DegToRad * 0.5f);
+			f64 cr = std::cos(eRot.x * DegToRad * 0.5f);
+			f64 sr = std::sin(eRot.x * DegToRad * 0.5f);
 
 			Quat q;
 			q.w = cr * cp * cy + sr * sp * sy;

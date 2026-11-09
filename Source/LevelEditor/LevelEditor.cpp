@@ -34,6 +34,8 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 		tc->rotation = Math::Vec3(0.0f, 0.0f, 0.0f);
 		tc->scale = Math::Vec3(5.0f, 5.0f, 5.0f);
 
+		tc->SetRotation(Math::Vec3(0.0f, 0.0f, 45.0f));
+
 		sc->TextureAssetHandle = boxtexture->GetAssetHandle();
 		sc->Visible = true;
 	}
