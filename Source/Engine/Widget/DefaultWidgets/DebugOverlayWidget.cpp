@@ -101,7 +101,6 @@ namespace Tourqe::Engine {
 			ImGui::Unindent();
 		}
 
-		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Asset Subsystem Inspector")) {
 			ImGui::Indent();
 			auto assetSystem = Engine::Get()->GetSubsystem<AssetSubsystem>();
