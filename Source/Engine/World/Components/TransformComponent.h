@@ -35,6 +35,7 @@ namespace Tourqe::Engine {
 			rotation = rotation.FromEuler(rotationEuler);
 		}
 
+		[[nodiscard]] const Math::Vec3 GetEulerRotation() const { return rotationEuler; }
 	private:
 		TPROP();
 		Math::Vec3 rotationEuler;

@@ -113,34 +113,36 @@ namespace Tourqe::Engine {
     b8 Texture2DStreamer::CompressImageToBC3(u8* rawData, u32 width, u32 height, std::vector<u8>& compressedImage) {
         compressedImage.clear();
 
-        BEGIN_SCOPE(Texture2DNVTT);
-        nvtt::Surface surface;
-        if (!surface.setImage(nvtt::InputFormat_BGRA_8UB, width, height, 1, rawData)) {
-            Logger::Error("Texture2DNVTT", "NVTT failed to set image data");
-            return false;
+        {
+            BEGIN_PROFILE_SCOPE("Texture2DNVTT");
+
+            nvtt::Surface surface;
+            if (!surface.setImage(nvtt::InputFormat_BGRA_8UB, width, height, 1, rawData)) {
+                Logger::Error("Texture2DNVTT", "NVTT failed to set image data");
+                return false;
+            }
+            surface.swizzle(2, 1, 0, 3);
+
+            nvtt::CompressionOptions compOptions;
+            compOptions.setFormat(nvtt::Format_BC3);
+            compOptions.setQuality(nvtt::Quality_Fastest);
+
+            NvttVectorOutputHandler outputHandler(compressedImage);
+            nvtt::OutputOptions outputOptions;
+            outputOptions.setOutputHandler(&outputHandler);
+            outputOptions.setOutputHeader(false);
+
+            nvtt::Context context;
+            context.enableCudaAcceleration(true);
+
+            b8 result = context.compress(surface, 0, 0, compOptions, outputOptions);
+
+            if (result) {
+                Logger::Info("Texture2DNVTT", "Image compressed");
+                return true;
+            }
         }
-        surface.swizzle(2, 1, 0, 3);
-
-        nvtt::CompressionOptions compOptions;
-        compOptions.setFormat(nvtt::Format_BC3);
-        compOptions.setQuality(nvtt::Quality_Fastest);
-
-        NvttVectorOutputHandler outputHandler(compressedImage);
-        nvtt::OutputOptions outputOptions;
-        outputOptions.setOutputHandler(&outputHandler);
-        outputOptions.setOutputHeader(false);
-
-        nvtt::Context context;
-        context.enableCudaAcceleration(true);
-
-        b8 result = context.compress(surface, 0, 0, compOptions, outputOptions);
-
-        if (result) {
-            Logger::Info("Texture2DNVTT", "Image compressed");
-            return true;
-        }
-        END_SCOPE(Texture2DNVTT);
-
+        
         Logger::Error("Texture2DNVTT", "NVTT compression failed");
         return false;
     }

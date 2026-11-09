@@ -85,17 +85,19 @@ namespace Runtime::PAL {
 			Logger::Info("WindowsIO", "size: {:.2f}MB", buffSizeMB);
 
 			std::vector<u8> fileBuffer((buffSize + sizeof(u8) - 1) / sizeof(u8));
-			BEGIN_SCOPE(WindowsIOParseTime);
-			FILE* file = fopen(filePath.GetPathCStr(), "rb");
-			if (file) {
-				fread(&fileBuffer[0], 1, buffSize, file);
-				fclose(file);
+			{
+				BEGIN_PROFILE_SCOPE("WindowsIOParseTime");
+
+				FILE* file = fopen(filePath.GetPathCStr(), "rb");
+				if (file) {
+					fread(&fileBuffer[0], 1, buffSize, file);
+					fclose(file);
+				}
+				else {
+					Logger::Error("WindowsIO", "Failed to read file {}", filePath.GetPathStr());
+					return {};
+				}
 			}
-			else {
-				Logger::Error("WindowsIO", "Failed to read file {}", filePath.GetPathStr());
-				return {};
-			}
-			END_SCOPE(WindowsIOParseTime);
 			return fileBuffer;
 		}
 		else {
@@ -111,16 +113,17 @@ namespace Runtime::PAL {
 			return Result("File does not exist");
 		}
 
-		BEGIN_SCOPE(WindowsIOFileMap);
-		Logger::Info("WindowsIO", "Mapping file: {}", filePath.GetPathStr());
-		std::error_code err; // TODO(0x): write a custom memory mapper
-		mio::mmap_source map(filePath.GetPathCStr());
-		if (err) {
-			Logger::Error("WindowsIO", "Failed to map file: {}", err.message());
-			return Result("Failed to map file");
+		{
+			BEGIN_PROFILE_SCOPE("WindowsIOFileMap");
+			Logger::Info("WindowsIO", "Mapping file: {}", filePath.GetPathStr());
+			std::error_code err; // TODO(0x): write a custom memory mapper
+			mio::mmap_source map(filePath.GetPathCStr());
+			if (err) {
+				Logger::Error("WindowsIO", "Failed to map file: {}", err.message());
+				return Result("Failed to map file");
+			}
+			mappedBuffer.assign(map.begin(), map.end());
 		}
-		mappedBuffer.assign(map.begin(), map.end());
-		END_SCOPE(WindowsIOFileMap);
 
 		return Result();
 	}

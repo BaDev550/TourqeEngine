@@ -7,24 +7,37 @@
 #include <string_view>
 
 namespace Runtime {
-	class Profile final {
+	class Profiler final {
 	public:
-		Profile(std::string_view name) : _name(name) { // TODO(0x): make a registry class to register the duration to a name and destroy it :p
-			_start = std::chrono::high_resolution_clock::now();
+		static Profiler& Get() {
+			static Profiler instance;
+			return instance;
 		}
 
-		~Profile() {
-			auto end = std::chrono::high_resolution_clock::now();
-			float durationMS = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(end - _start).count();
-			Logger::Info(_name, "Took {:.2f}/ms", durationMS);
+		void Record(const std::string& name, double durationMs) {
+			_timings[name] = durationMs;
+		}
+
+		const std::unordered_map<std::string, double>& GetTimings() const {
+			return _timings;
 		}
 	private:
-		std::string _name;
-		std::chrono::steady_clock::time_point _start;
+		std::unordered_map<std::string, double> _timings;
 	};
 
-#define BEGIN_SCOPE(name) { \
-	Runtime::Profile auto_scope_##name{ #name };
+	class ScopedTimer {
+	public:
+		ScopedTimer(const std::string& name) : _name(name), _start(std::chrono::high_resolution_clock::now()) {}
 
-#define END_SCOPE(name) }
+		~ScopedTimer() {
+			auto end = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double, std::milli> elapsed = end - _start;
+			Profiler::Get().Record(_name, elapsed.count());
+		}
+
+	private:
+		std::string _name;
+		std::chrono::time_point<std::chrono::high_resolution_clock> _start;
+	};
 }
+#define BEGIN_PROFILE_SCOPE(name) ::Runtime::ScopedTimer profiler_timer_##__LINE__(name)

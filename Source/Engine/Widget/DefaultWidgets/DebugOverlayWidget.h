@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Engine/Widget/Widget.h>
+#include <Engine/World/ECS/EntityDefinitions.h>
 
 namespace Tourqe::Engine {
 	TCLASS();
@@ -11,5 +12,7 @@ namespace Tourqe::Engine {
 		~DebugOverlayWidget() final = default;
 
 		virtual void Draw() final;
+	private:
+		EntityHandle _selectedEntity;
 	};
 }

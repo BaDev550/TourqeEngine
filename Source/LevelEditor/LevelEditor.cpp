@@ -9,6 +9,7 @@
 
 #include <Engine/World/Components/TransformComponent.h>
 #include <Engine/World/Components/SpriteComponent.h>
+#include <Engine/World/Components/IdenityComponent.h>
 
 #include <imgui.h>
 
@@ -28,8 +29,12 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 
 	{
 		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
+		IdenityComponent* ic = worldSystem->GetActiveScene()->AddComponent<IdenityComponent>(entity1);
 		TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
 		SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
+		ic->name = "BaDev";
+		ic->uuid = UUID();
+
 		tc->position = Math::Vec3(0.0f, 0.0f, 0.0f);
 		tc->rotation = Math::Vec3(0.0f, 0.0f, 0.0f);
 		tc->scale = Math::Vec3(5.0f, 5.0f, 5.0f);
@@ -41,8 +46,12 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 	}
 	{
 		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
+		IdenityComponent* ic = worldSystem->GetActiveScene()->AddComponent<IdenityComponent>(entity1);
 		TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
 		SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
+		ic->name = "BaDevsi";
+		ic->uuid = UUID();
+
 		tc->position = Math::Vec3(7.0f, 0.0f, 0.0f);
 		tc->rotation = Math::Vec3(0.0f, 0.0f, 0.0f);
 		tc->scale = Math::Vec3(-2.0f, 2.0f, 2.0f);
@@ -52,8 +61,12 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 	}
 	{
 		EntityHandle entity1 = worldSystem->GetActiveScene()->CreateEntity();
+		IdenityComponent* ic = worldSystem->GetActiveScene()->AddComponent<IdenityComponent>(entity1);
 		TransformComponent* tc = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity1);
 		SpriteComponent* sc = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity1);
+		ic->name = "BaDev2";
+		ic->uuid = UUID();
+
 		tc->position = Math::Vec3(-7.0f, 0.0f, 0.0f);
 		tc->rotation = Math::Vec3(0.0f, 0.0f, 0.0f);
 		tc->scale = Math::Vec3(2.0f, 2.0f, 2.0f);

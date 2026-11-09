@@ -39,6 +39,7 @@ namespace Tourqe::Engine {
 
 		[[nodiscard]] const u32 GetImageIndex() const { return _imageIndex; }
 		[[nodiscard]] const u32 GetFrameIndex() const { return _currentFrameIndex; }
+		[[nodiscard]] const u64 GetSignalValue() const { return _signalValue; }
 		[[nodiscard]] RHI::Image* GetDefaultWhiteImage() const { return _defaultWhiteImage; }
 		[[nodiscard]] RHI::Context* GetContext() { return _context; }
 		[[nodiscard]] RHI::Swapchain* GetSwapchain() { return _swapchain; }

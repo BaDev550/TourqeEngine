@@ -19,103 +19,103 @@ namespace Tourqe::Engine {
 		auto platform = engine->GetPlatformSystem()->GetPlatform();
 		if (!window) { return Result("Failed to find window"); }
 
-		BEGIN_SCOPE(RHIInitilization)
+		{
+			BEGIN_PROFILE_SCOPE("RHIInitilization");
 
-		RHI::ContextDesc contextDesc{};
+			RHI::ContextDesc contextDesc{};
 #ifdef _DEBUG
-		contextDesc.enableValidationLayer = true;
+			contextDesc.enableValidationLayer = true;
 #endif
-		contextDesc.features.dynamicRendering = true;
-		contextDesc.features.bufferDeviceAddress = true;
-		contextDesc.features.descriptorIndexing = true;
-		contextDesc.features.robustBufferAccess = true;
-		contextDesc.features.runtimeDescriptorArray = true;
-		contextDesc.features.synchronization2 = true;
-		contextDesc.features.timelineSemaphore = true;
-		contextDesc.features.samplerAnisotropy = true;
-		contextDesc.platformDesc.windowHandle = window->GetHandle();
-		contextDesc.platformDesc.instance = window->GetInstance();
-		contextDesc.platformDesc.platform = platform->GetPlatform();
-		_context = RHI::CreateContext(contextDesc);
-		if (!_context) 
-			return Result("Failed to create context");
-		
-		RHI::SwapchainDesc swapchainDesc{};
-		swapchainDesc.width = window->GetWidth();
-		swapchainDesc.height = window->GetHeight();
-		swapchainDesc.vsync = true;
-		_swapchain = _context->CreateSwapchain(swapchainDesc);
-		if (!_swapchain) 
-			return Result("Failed to create swapchain");
+			contextDesc.features.dynamicRendering = true;
+			contextDesc.features.bufferDeviceAddress = true;
+			contextDesc.features.descriptorIndexing = true;
+			contextDesc.features.robustBufferAccess = true;
+			contextDesc.features.runtimeDescriptorArray = true;
+			contextDesc.features.synchronization2 = true;
+			contextDesc.features.timelineSemaphore = true;
+			contextDesc.features.samplerAnisotropy = true;
+			contextDesc.platformDesc.windowHandle = window->GetHandle();
+			contextDesc.platformDesc.instance = window->GetInstance();
+			contextDesc.platformDesc.platform = platform->GetPlatform();
+			_context = RHI::CreateContext(contextDesc);
+			if (!_context)
+				return Result("Failed to create context");
 
-		{
-			_imguiContext = _context->CreateImGuiContext();
-			_imguiContext->CreateContext();
-			platform->ImGuiCreateContext(reinterpret_cast<void*>(contextDesc.platformDesc.windowHandle));
-			_imguiContext->CreateNativeImGui();
-			if (!_imguiContext)
-				return Result("Failed to create imgui context");
-		}
+			RHI::SwapchainDesc swapchainDesc{};
+			swapchainDesc.width = window->GetWidth();
+			swapchainDesc.height = window->GetHeight();
+			swapchainDesc.vsync = true;
+			_swapchain = _context->CreateSwapchain(swapchainDesc);
+			if (!_swapchain)
+				return Result("Failed to create swapchain");
 
-		{
-			for (auto& fd : _frames) {
-				RHI::CommandPoolDesc cmdPoolDesc{};
-				cmdPoolDesc.queueFamilyIndex = _context->GetGraphicsQueue()->GetQueueFamilyIndex();
-				cmdPoolDesc.usage = RHI::CommandPoolUsage::Resettable;
-				fd.commandPool = _context->CreateCommandPool(cmdPoolDesc);
+			{
+				_imguiContext = _context->CreateImGuiContext();
+				_imguiContext->CreateContext();
+				platform->ImGuiCreateContext(reinterpret_cast<void*>(contextDesc.platformDesc.windowHandle));
+				_imguiContext->CreateNativeImGui();
+				if (!_imguiContext)
+					return Result("Failed to create imgui context");
+			}
 
-				RHI::CommandBufferDesc cmdBufferDesc{};
-				cmdBufferDesc.type = RHI::CommandBufferType::Primary;
-				fd.commandBuffer = fd.commandPool->AllocateCommandBuffer(cmdBufferDesc);
+			{
+				for (auto& fd : _frames) {
+					RHI::CommandPoolDesc cmdPoolDesc{};
+					cmdPoolDesc.queueFamilyIndex = _context->GetGraphicsQueue()->GetQueueFamilyIndex();
+					cmdPoolDesc.usage = RHI::CommandPoolUsage::Resettable;
+					fd.commandPool = _context->CreateCommandPool(cmdPoolDesc);
 
+					RHI::CommandBufferDesc cmdBufferDesc{};
+					cmdBufferDesc.type = RHI::CommandBufferType::Primary;
+					fd.commandBuffer = fd.commandPool->AllocateCommandBuffer(cmdBufferDesc);
+
+					RHI::FenceDesc fenceDesc{};
+					fenceDesc.type = RHI::SemaphoreType::Binary;
+					fd.imageAvailableFence = _context->CreateFence(fenceDesc);
+				}
+			}
+
+			{
 				RHI::FenceDesc fenceDesc{};
-				fenceDesc.type = RHI::SemaphoreType::Binary;
-				fd.imageAvailableFence = _context->CreateFence(fenceDesc);
+				fenceDesc.initialValue = MaxFramesInFlight;
+				fenceDesc.type = RHI::SemaphoreType::Timeline;
+				_timelineFence = _context->CreateFence(fenceDesc);
+			}
+
+			{
+				_renderFinishedFences.reserve(_swapchain->GetImageCount());
+				for (usize i = 0; i < _swapchain->GetImageCount(); i++) {
+					RHI::FenceDesc fenceDesc{};
+					fenceDesc.type = RHI::SemaphoreType::Binary;
+					_renderFinishedFences.push_back(_context->CreateFence(fenceDesc));
+				}
+			}
+
+			{
+				RHI::ImageDesc imageDesc{};
+				imageDesc.width = 1;
+				imageDesc.height = 1;
+				imageDesc.format = RHI::Format::RGBA8;
+				imageDesc.usage = RHI::ImageUsage::Sampled | RHI::ImageUsage::TransferDst;
+				imageDesc.view.type = RHI::ImageViewType::Image2D;
+				imageDesc.tileMode = RHI::ImageTileMode::Optimal;
+				imageDesc.sampler = RHI::StaticSampler::NearestClamp;
+				u32 whiteImageData = COLOR_WHITE;
+
+				_defaultWhiteImage = _context->CreateImage(imageDesc);
+
+				Submit([=](RHI::CommandBuffer* cmd) {
+					RHI::Buffer* stagingBuffer = CreateStagingBuffer(sizeof(u32));
+					stagingBuffer->Write(&whiteImageData);
+
+					cmd->TransitionImageLayout(_defaultWhiteImage, RHI::ImageLayout::TransferDst);
+					cmd->CopyBufferToImage(stagingBuffer, _defaultWhiteImage, RHI::ImageLayout::TransferDst, imageDesc.width, imageDesc.height);
+					cmd->TransitionImageLayout(_defaultWhiteImage, RHI::ImageLayout::ShaderReadOnly);
+					});
+
+				_context->SetFallbackImage(_defaultWhiteImage);
 			}
 		}
-
-		{
-			RHI::FenceDesc fenceDesc{};
-			fenceDesc.initialValue = MaxFramesInFlight;
-			fenceDesc.type = RHI::SemaphoreType::Timeline;
-			_timelineFence = _context->CreateFence(fenceDesc);
-		}
-
-		{
-			_renderFinishedFences.reserve(_swapchain->GetImageCount());
-			for (usize i = 0; i < _swapchain->GetImageCount(); i++) {
-				RHI::FenceDesc fenceDesc{};
-				fenceDesc.type = RHI::SemaphoreType::Binary;
-				_renderFinishedFences.push_back(_context->CreateFence(fenceDesc));
-			}
-		}
-
-		{
-			RHI::ImageDesc imageDesc{};
-			imageDesc.width = 1;
-			imageDesc.height = 1;
-			imageDesc.format = RHI::Format::RGBA8;
-			imageDesc.usage = RHI::ImageUsage::Sampled | RHI::ImageUsage::TransferDst;
-			imageDesc.view.type = RHI::ImageViewType::Image2D;
-			imageDesc.tileMode = RHI::ImageTileMode::Optimal;
-			imageDesc.sampler = RHI::StaticSampler::NearestClamp;
-			u32 whiteImageData = COLOR_WHITE;
-
-			_defaultWhiteImage = _context->CreateImage(imageDesc);
-			
-			Submit([=](RHI::CommandBuffer* cmd) {
-				RHI::Buffer* stagingBuffer = CreateStagingBuffer(sizeof(u32));
-				stagingBuffer->Write(&whiteImageData);
-
-				cmd->TransitionImageLayout(_defaultWhiteImage, RHI::ImageLayout::TransferDst);
-				cmd->CopyBufferToImage(stagingBuffer, _defaultWhiteImage, RHI::ImageLayout::TransferDst, imageDesc.width, imageDesc.height);
-				cmd->TransitionImageLayout(_defaultWhiteImage, RHI::ImageLayout::ShaderReadOnly);
-				});
-
-			_context->SetFallbackImage(_defaultWhiteImage);
-		}
-
-		END_SCOPE(RHIInitilization)
 
 		return Result();
 	}

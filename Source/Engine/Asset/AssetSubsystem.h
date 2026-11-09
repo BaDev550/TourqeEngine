@@ -60,6 +60,11 @@ namespace Tourqe::Engine {
 			if (!_assets.contains(handle)) return nullptr;
 			return _assets[handle];
 		}
+
+		AssetSource& GetSource(AssetHandle handle) { return _cachedAssetSources[handle]; }
+
+		[[nodiscard]] const std::unordered_map<AssetHandle, Asset*>& GetAssets() const { return _assets; }
+		[[nodiscard]] const std::unordered_map<AssetHandle, AssetSource>& GetAssetSources() const { return _cachedAssetSources; }
 	private:
 		Asset* Load(AssetHandle handle);
 		void Unload(AssetHandle handle);

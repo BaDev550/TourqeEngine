@@ -4,6 +4,7 @@
 #include <Engine/Platform/Window/WindowSubsystem.h>
 #include <Engine/Graphics/GraphicsSubsystem.h>
 #include <Engine/Asset/Shader/Shader.h>
+#include <Runtime/Definitions/Profiler.h>
 
 namespace Tourqe::Engine {
 	void ForwardRenderPass::OnInitialize() {
@@ -47,61 +48,65 @@ namespace Tourqe::Engine {
 	void ForwardRenderPass::Execute(const RenderFrame& frame) {
 		auto* renderSystem = GetEngine()->GetSubsystem<GraphicsSubsystem>();
 
-		Runtime::RHI::ColorAttachment attachment{};
-		attachment.image = frame.color;
-		attachment.loadOp = Runtime::RHI::ImageLoadOp::Load;
-		attachment.clearColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		{
+			BEGIN_PROFILE_SCOPE("ForwardPass");
 
-		frame.cmd->TransitionImageLayout(frame.color, Runtime::RHI::ImageLayout::ColorAttachment);
-		frame.cmd->TransitionImageLayout(frame.depth, Runtime::RHI::ImageLayout::DepthAttachment);
+			Runtime::RHI::ColorAttachment attachment{};
+			attachment.image = frame.color;
+			attachment.loadOp = Runtime::RHI::ImageLoadOp::Load;
+			attachment.clearColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-		Runtime::RHI::RenderingSubmitInfo info{};
-		info.colorAttachments = { attachment };
-		info.depthAttachment = frame.depth;
-		info.extent = frame.extent;
+			frame.cmd->TransitionImageLayout(frame.color, Runtime::RHI::ImageLayout::ColorAttachment);
+			frame.cmd->TransitionImageLayout(frame.depth, Runtime::RHI::ImageLayout::DepthAttachment);
 
-		Runtime::RHI::PassDebugInfo debug{};
-		debug.label = "ForwardPass";
-		debug.color = glm::vec3(1.0f, 0.0f, 0.0f);
+			Runtime::RHI::RenderingSubmitInfo info{};
+			info.colorAttachments = { attachment };
+			info.depthAttachment = frame.depth;
+			info.extent = frame.extent;
 
-		frame.cmd->BeginDynamicRendering(info, &debug);
-		frame.cmd->BindPipeline(_forwardPassPipeline);
+			Runtime::RHI::PassDebugInfo debug{};
+			debug.label = "ForwardPass";
+			debug.color = glm::vec3(1.0f, 0.0f, 0.0f);
 
-		auto* bindlessSet = renderSystem->GetContext()->GetBindlessDescriptorSet();
-		auto* globalSet = renderSystem->GetContext()->GetGlobalDescriptorSet();
+			frame.cmd->BeginDynamicRendering(info, &debug);
+			frame.cmd->BindPipeline(_forwardPassPipeline);
 
-		frame.cmd->BindDescriptorSet(_forwardPassPipeline, bindlessSet, 0, 1);
-		frame.cmd->BindDescriptorSet(_forwardPassPipeline, globalSet, 0, 0);
+			auto* bindlessSet = renderSystem->GetContext()->GetBindlessDescriptorSet();
+			auto* globalSet = renderSystem->GetContext()->GetGlobalDescriptorSet();
 
-		auto spriteQueue = frame.GetDrawQueue(RenderQueue::Sprite);
+			frame.cmd->BindDescriptorSet(_forwardPassPipeline, bindlessSet, 0, 1);
+			frame.cmd->BindDescriptorSet(_forwardPassPipeline, globalSet, 0, 0);
 
-		_spriteDatas.resize(spriteQueue.size());
-		
-		int i = 0;
-		for (const RenderItem& item : spriteQueue) {
-			SpriteData spriteData{};
-			spriteData.world = item.world;
-			spriteData.vertexBufferID = item.vertexBufferIndex;
-			spriteData.firstVertex = item.firstVertex;
-			spriteData.frameDataIndex = frame.frameDataBufferIndex;
-			spriteData.textureID = item.textureID;
-			spriteData.samplerID = item.samplerID;
-			
-			_spriteDatas[i] = spriteData;
-			i++;
+			auto spriteQueue = frame.GetDrawQueue(RenderQueue::Sprite);
+
+			_spriteDatas.resize(spriteQueue.size());
+
+			int i = 0;
+			for (const RenderItem& item : spriteQueue) {
+				SpriteData spriteData{};
+				spriteData.world = item.world;
+				spriteData.vertexBufferID = item.vertexBufferIndex;
+				spriteData.firstVertex = item.firstVertex;
+				spriteData.frameDataIndex = frame.frameDataBufferIndex;
+				spriteData.textureID = item.textureID;
+				spriteData.samplerID = item.samplerID;
+
+				_spriteDatas[i] = spriteData;
+				i++;
+			}
+
+			if (!_spriteDatas.empty()) {
+				_spriteDataStorageBuffer->Write(_spriteDatas.data(), (sizeof(SpriteData) * _spriteDatas.size()));
+
+				SpritePushConstant pc{};
+				pc.spriteDataBDA = _spriteDataStorageBuffer->GetGPUAdress();
+
+				frame.cmd->PushConstant(_forwardPassPipeline, &pc, sizeof(SpritePushConstant), 0);
+				frame.cmd->DrawVertex(6, spriteQueue.size());
+			}
+
+			frame.cmd->EndDynamicRendering();
+			frame.cmd->TransitionImageLayout(frame.color, Runtime::RHI::ImageLayout::PresentSrc);
 		}
-
-		if (!_spriteDatas.empty()) {
-			_spriteDataStorageBuffer->Write(_spriteDatas.data(), (sizeof(SpriteData) * _spriteDatas.size()));
-
-			SpritePushConstant pc{};
-			pc.spriteDataBDA = _spriteDataStorageBuffer->GetGPUAdress();
-
-			frame.cmd->PushConstant(_forwardPassPipeline, &pc, sizeof(SpritePushConstant), 0);
-			frame.cmd->DrawVertex(6, spriteQueue.size());
-		}
-
-		frame.cmd->EndDynamicRendering();
-		frame.cmd->TransitionImageLayout(frame.color, Runtime::RHI::ImageLayout::PresentSrc);
 	}
 }
