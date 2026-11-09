@@ -14,6 +14,7 @@ namespace Runtime::RHI {
 		virtual void Begin() const = 0;
 		virtual void CreateContext() = 0;
 		virtual void CreateNativeImGui() = 0;
+		virtual void* GetNativeImGui() const = 0;
 		virtual void Flush(Runtime::RHI::CommandBuffer* cmd) const = 0;
 	};
 }

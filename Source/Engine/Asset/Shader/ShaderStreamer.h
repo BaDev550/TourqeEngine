@@ -7,7 +7,7 @@
 
 namespace Tourqe::Engine {
 	TCLASS();
-    class ShaderStreamer final : public AssetStreamer {
+    class ENGINE_API ShaderStreamer final : public AssetStreamer {
 		GENERATE_CLASS(ShaderStreamer);
     public:
         static constexpr std::string_view ShaderCacheFileDir = "ShaderCache";

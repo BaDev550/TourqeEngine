@@ -24,7 +24,7 @@ namespace Tourqe::Engine {
     };
 
     TCLASS();
-	class Texture2DStreamer final : public AssetStreamer {
+	class ENGINE_API Texture2DStreamer final : public AssetStreamer {
         GENERATE_CLASS(Texture2DStreamer);
 	public:
 		virtual Runtime::Result Cook(AssetSource& source) override;

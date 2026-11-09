@@ -1,11 +1,20 @@
 #include "ReflectionSystem.h"
 
-#include <ReflectManifest.h>
-#include "ReflectionSystem.h"
+#include <Engine/Core/Engine.h>
+#include <Engine/Platform/PlatformSystem.h>
 
 namespace Tourqe::Engine {
     ReflectionSystem::ReflectionSystem() {
-		GenerateModuleManifestation(&_types); // TEMP
+		auto platform = Engine::Get()->GetPlatformSystem()->GetPlatform();
+		using GenerateFn = void(*)(std::vector<Runtime::Reflection::Type>*);
+
+		auto* generateManifest = reinterpret_cast<GenerateFn>(platform->GetMainModuleSymbol("GenerateModuleManifestation"));
+		if (!generateManifest) {
+			Logger::Error("ReflectionSubsystem", "Executable does not export 'GenerateModuleManifestation'");
+			return;
+		}
+
+		generateManifest(&_types);
 
 		for (auto& type : _types) {
             _lookupTable[type.GetTypeIndex()] = &type;

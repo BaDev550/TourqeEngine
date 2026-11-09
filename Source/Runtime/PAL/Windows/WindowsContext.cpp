@@ -181,4 +181,12 @@ namespace Runtime::PAL {
 		DWORD dwAttrib = GetFileAttributes(directoryPath.GetPathCStr());
 		return (dwAttrib != INVALID_FILE_ATTRIBUTES && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 	}
+
+	void* WindowsContext::GetMainModuleSymbol(const char* symbolName) {
+		HMODULE mainExeModule = GetModuleHandleA(nullptr);
+		if (!mainExeModule) {
+			return nullptr;
+		}
+		return reinterpret_cast<void*>(GetProcAddress(mainExeModule, symbolName));
+	}
 }

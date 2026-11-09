@@ -23,8 +23,7 @@ target_compile_definitions(Engine
 target_include_directories(Engine 
     PUBLIC 
         "${CMAKE_SOURCE_DIR}/Source" 
-    PRIVATE 
-        ${REFLECTION_INCLUDE_PATH} 
+    PRIVATE
         ${MIO_INCLUDE_DIR} 
         ${NVTT_INCLUDE_DIR} 
         ${Stb_INCLUDE_DIR}
@@ -32,9 +31,9 @@ target_include_directories(Engine
 
 target_link_libraries(Engine 
     PUBLIC 
+        Runtime
         glm::glm-header-only
     PRIVATE
-        Runtime
         imgui::imgui
         nlohmann_json::nlohmann_json
         unofficial::shaderc::shaderc

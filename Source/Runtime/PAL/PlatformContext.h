@@ -37,6 +37,8 @@ namespace Runtime::PAL{
 
 		virtual b8 FileExists(const Path& filePath) = 0;
 		virtual b8 DirectoryExists(const Path& directoryPath) = 0;
+
+		virtual void* GetMainModuleSymbol(const char* symbolName) = 0; // TODO(0x): more modular
 	};
 	PlatformContext* CreatePlatformContext();
 }

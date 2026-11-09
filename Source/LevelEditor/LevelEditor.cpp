@@ -23,7 +23,6 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 	auto assetSystem = _engine->GetSubsystem<AssetSubsystem>();
 	auto context = renderSystem->GetContext();
 
-	//ImGui::SetCurrentContext(context->GetImGuiContext());
 	Texture2D* boxtexture = assetSystem->Get<Texture2D>("warrior_bg.jpg");
 	Texture2D* rocktexture = assetSystem->Get<Texture2D>("player_sprite.png");
 	Texture2D* transparenttexture = assetSystem->Get<Texture2D>("Org.png");

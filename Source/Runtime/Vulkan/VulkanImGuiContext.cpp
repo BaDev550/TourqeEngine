@@ -81,4 +81,6 @@ namespace Runtime::RHI {
 		VulkanCommandBuffer* vkCmd = static_cast<VulkanCommandBuffer*>(cmd);
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), vkCmd->GetVkCommandBuffer());
 	}
+
+	void* VulkanImGuiContext::GetNativeImGui() const { return ImGui::GetCurrentContext(); }
 }

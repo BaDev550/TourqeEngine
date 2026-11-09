@@ -16,6 +16,7 @@ namespace Runtime::RHI {
 		virtual void Begin() const final;
 		virtual void CreateContext() final;
 		virtual void CreateNativeImGui() final;
+		virtual void* GetNativeImGui() const final;
 		virtual void Flush(Runtime::RHI::CommandBuffer* cmd) const final;
 	private:
 		VulkanContext& _owner;

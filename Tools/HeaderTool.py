@@ -174,7 +174,7 @@ def render_manifest(
     out += [f'#include "{proj}/{name}"' for proj, name, _ in entries]
     out += [
         "",
-        f'extern "C" {export_macro} void GenerateModuleManifestation(std::vector<{registry_ns}::Type>* outTypes) {{'.replace("  ", " "),
+        f'extern "C" __declspec(dllexport) void GenerateModuleManifestation(std::vector<{registry_ns}::Type>* outTypes) {{'.replace("  ", " "),
         "\tif (!outTypes)",
         "\t\treturn;",
         "",

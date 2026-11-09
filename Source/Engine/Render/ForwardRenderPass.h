@@ -6,7 +6,7 @@
 
 namespace Tourqe::Engine {
 	TCLASS();
-	class ForwardRenderPass final : public RenderPass {
+	class ENGINE_API ForwardRenderPass final : public RenderPass {
 		GENERATE_CLASS(ForwardRenderPass)
 	public:
 		virtual void OnInitialize() final;
