@@ -15,6 +15,7 @@ layout(set = BindlessGlobalSet, binding = 1) readonly buffer GlobalBufferBlock {
 layout(set = StaticSamplerSet, binding = 0) uniform sampler uGlobalSamplers[];
 
 #define GetBindlessTextureFromID(id, samplerId) sampler2D(uGlobalTextures2D[nonuniformEXT(id)], uGlobalSamplers[nonuniformEXT(samplerId)])
+
 float LoadFloat(uint bufferId, uint i) { return uintBitsToFloat(uGlobalBuffers[nonuniformEXT(bufferId)].data[i]); }
 vec2  LoadVec2 (uint b, uint i) { return vec2(LoadFloat(b, i), LoadFloat(b, i + 1u)); }
 vec3  LoadVec3 (uint b, uint i) { return vec3(LoadVec2(b, i), LoadFloat(b, i + 2u)); }

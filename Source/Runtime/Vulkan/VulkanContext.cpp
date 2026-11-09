@@ -697,6 +697,7 @@ namespace Runtime::RHI {
 		createInfo.pAllocationCallbacks = &_allocationCallbacks;
 		createInfo.pVulkanFunctions = &funcs;
 		createInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+		createInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 		vmaCreateAllocator(&createInfo, &_allocator);
 	}
 

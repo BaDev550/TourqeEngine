@@ -17,8 +17,8 @@ namespace Runtime::RHI {
 			std::memcpy(_mappedPtr, data, _desc.size);
 		}
 		else {
-			void* oData = ((char*)data + offset);
-			std::memcpy(_mappedPtr, oData, size);
+			void* destination = ((char*)_mappedPtr + offset);
+			std::memcpy(destination, data, size);
 		}
 	}
 

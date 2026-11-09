@@ -35,11 +35,6 @@ namespace Tourqe::Engine {
 		void Submit(CommandFunc func);
 		void Track(RHI::Object* object);
 
-		void BeginSwapchainPass();
-		void EndSwapchainPass();
-
-		b8 CanSubmitRenderCommands() const { return _canSubmitCommand; }
-
 		RHI::Buffer* CreateStagingBuffer(usize dataSizeInBytes);
 
 		[[nodiscard]] const u32 GetImageIndex() const { return _imageIndex; }

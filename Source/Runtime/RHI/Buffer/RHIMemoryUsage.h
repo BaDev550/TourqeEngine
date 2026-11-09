@@ -12,7 +12,8 @@ namespace Runtime::RHI {
 	enum class AllocationFlagBits : u8 {
 		None = 0,
 		HostAccessSequentialWrite = BIT(0),
-		CreateMapped = BIT(1)
+		HostAccessRandom = BIT(1),
+		CreateMapped = BIT(2)
 	};
 	CORE_DEFINE_ENUM_FLAG_OPERATORS(AllocationFlagBits);
 }

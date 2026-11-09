@@ -10,8 +10,8 @@ namespace Tourqe::Engine {
 		auto assetSystem = GetEngine()->GetSubsystem<AssetSubsystem>();
 		auto* renderSystem = GetEngine()->GetSubsystem<GraphicsSubsystem>();
 		{
-			Shader* forwardPassVertexShader = assetSystem->Get<Shader>("base_forward_vert.vert");
-			Shader* forwardPassFragmentShader = assetSystem->Get<Shader>("base_forward_frag.frag");
+			Shader* forwardPassVertexShader = assetSystem->Get<Shader>("2D_forward_vert.vert");
+			Shader* forwardPassFragmentShader = assetSystem->Get<Shader>("2D_forward_frag.frag");
 
 			Runtime::RHI::PushConstantRange pcRange{};
 			pcRange.size = sizeof(SpritePushConstant);
@@ -27,12 +27,20 @@ namespace Tourqe::Engine {
 			vertexDesc.depthTest = false;
 
 			_forwardPassPipeline = renderSystem->GetContext()->CreatePipeline(vertexDesc);
+
+			Runtime::RHI::BufferDesc sbDesc{};
+			sbDesc.size = sizeof(SpriteData) * MaxSprites;
+			sbDesc.usage = Runtime::RHI::BufferUsage::Storage | Runtime::RHI::BufferUsage::DeviceAddress;
+			sbDesc.memoryUsage = Runtime::RHI::MemoryUsage::Auto;
+			sbDesc.allocationFlags = Runtime::RHI::AllocationFlagBits::HostAccessRandom | Runtime::RHI::AllocationFlagBits::CreateMapped;
+			_spriteDataStorageBuffer = renderSystem->GetContext()->CreateBuffer(sbDesc);
 		}
 	}
 
 	void ForwardRenderPass::OnDestroy() {
 		auto* renderSystem = GetEngine()->GetSubsystem<GraphicsSubsystem>();
 		renderSystem->GetContext()->WaitDeviceIdle();
+		Runtime::Mem::Allocator::Destroy(_spriteDataStorageBuffer);
 		Runtime::Mem::Allocator::Destroy(_forwardPassPipeline);
 	}
 
@@ -65,17 +73,32 @@ namespace Tourqe::Engine {
 		frame.cmd->BindDescriptorSet(_forwardPassPipeline, bindlessSet, 0, 1);
 		frame.cmd->BindDescriptorSet(_forwardPassPipeline, globalSet, 0, 0);
 
-		for (const RenderItem& item : frame.GetDrawQueue(RenderQueue::Sprite)) {
-			SpritePushConstant pc;
-			pc.vertexBufferID = item.vertexBufferIndex;
-			pc.firstVertex = item.firstVertex;
-			pc.frameDataIndex = frame.frameDataBufferIndex;
-			pc.world = item.world;
-			pc.textureID = item.textureID;
-			pc.samplerID = item.samplerID;
+		auto spriteQueue = frame.GetDrawQueue(RenderQueue::Sprite);
+
+		_spriteDatas.resize(spriteQueue.size());
+		
+		int i = 0;
+		for (const RenderItem& item : spriteQueue) {
+			SpriteData spriteData{};
+			spriteData.world = item.world;
+			spriteData.vertexBufferID = item.vertexBufferIndex;
+			spriteData.firstVertex = item.firstVertex;
+			spriteData.frameDataIndex = frame.frameDataBufferIndex;
+			spriteData.textureID = item.textureID;
+			spriteData.samplerID = item.samplerID;
 			
-			frame.cmd->PushConstant(_forwardPassPipeline, &pc, sizeof(SpritePushConstant));
-			frame.cmd->DrawVertex(item.vertexCount);
+			_spriteDatas[i] = spriteData;
+			i++;
+		}
+
+		if (!_spriteDatas.empty()) {
+			_spriteDataStorageBuffer->Write(_spriteDatas.data(), (sizeof(SpriteData) * _spriteDatas.size()));
+
+			SpritePushConstant pc{};
+			pc.spriteDataBDA = _spriteDataStorageBuffer->GetGPUAdress();
+
+			frame.cmd->PushConstant(_forwardPassPipeline, &pc, sizeof(SpritePushConstant), 0);
+			frame.cmd->DrawVertex(6, spriteQueue.size());
 		}
 
 		frame.cmd->EndDynamicRendering();

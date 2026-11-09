@@ -11,7 +11,7 @@ namespace Runtime::RHI {
 		using Object::Object;
 		virtual ~Buffer() = default;
 
-		virtual void Write(const void* data, size_t size = SIZE_MAX, size_t offset = SIZE_MAX) = 0;
+		virtual void Write(const void* data, size_t size = SIZE_MAX, size_t offset = 0) = 0;
 		virtual const void* GetMappedPtr() const = 0;
 
 		virtual const size_t GetSize() const noexcept = 0;

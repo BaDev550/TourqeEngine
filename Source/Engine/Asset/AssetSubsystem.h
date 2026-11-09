@@ -47,6 +47,9 @@ namespace Tourqe::Engine {
 						SaveRegistry();
 						return ast;
 					}
+					else {
+						Logger::Error("AssetSubsystem", "Failed to cook asset: {}", result.GetMessage());
+					}
 					return nullptr;
 				}
 			}

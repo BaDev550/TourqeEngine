@@ -25,7 +25,7 @@ namespace Runtime {
 
 		std::string GetExtension() {
 			usize pos = _path.find_last_of(".");
-			if (pos != std::string::npos) { return _path.substr(0, (_path.length() - pos)); }
+			if (pos != std::string::npos) { return _path.substr(pos); }
 			return "";
 		}
 		std::string GetParentDirectory() const {

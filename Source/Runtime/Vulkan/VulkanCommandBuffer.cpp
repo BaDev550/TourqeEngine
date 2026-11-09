@@ -141,10 +141,10 @@ namespace Runtime::RHI {
 		vkContext->CopyBufferToImage(_commandBuffer, vkBuffer->GetVkBuffer(), vkImage->GetImage(), vkLayout, width, height);
 	}
 
-	void VulkanCommandBuffer::DrawVertex(u32 count)
+	void VulkanCommandBuffer::DrawVertex(u32 count, u32 instances)
 	{
 		VulkanContext* vkContext = GetOwningRHIContext<VulkanContext>();
-		vkCmdDraw(_commandBuffer, count, 1, 0, 0);
+		vkCmdDraw(_commandBuffer, count, instances, 0, 0);
 	}
 
 	void VulkanCommandBuffer::BindPipeline(Pipeline* pipeline) {

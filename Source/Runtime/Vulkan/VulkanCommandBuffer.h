@@ -21,7 +21,7 @@ namespace Runtime::RHI {
 		virtual void CopyBuffer(Buffer* srcBuffer, Buffer* dstBuffer, size_t size) override;
 		virtual void CopyBufferToImage(Buffer* buffer, Image* image, ImageLayout layout, u32 width, u32 height) override;
 
-		virtual void DrawVertex(u32 count) override;
+		virtual void DrawVertex(u32 count, u32 instances = 0) override;
 
 		virtual void BindPipeline(Pipeline* pipeline) override;
 		virtual void PushConstant(Pipeline* pipeline, void* data, usize size, usize offset = 0) override;

@@ -22,7 +22,7 @@ namespace Tourqe::Engine {
 			glm::vec2 uv;
 		};
 
-		Vertex kSpriteVertices[6] = {
+		const Vertex SpriteVertices[6] = {
 			{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } }, // bottom-left
 			{ {  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f } }, // bottom-right
 			{ {  0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 0.0f } }, // top-right

@@ -20,12 +20,12 @@ namespace Tourqe::Engine {
 		_forwardRenderPass->OnInitialize();
 
 		Runtime::RHI::BufferDesc desc{};
-		desc.size = sizeof(kSpriteVertices);
+		desc.size = sizeof(SpriteVertices);
 		desc.usage = Runtime::RHI::BufferUsage::Storage;
 		desc.memoryUsage = Runtime::RHI::MemoryUsage::CPUToGPU;
 		desc.allocationFlags = Runtime::RHI::AllocationFlagBits::CreateMapped | Runtime::RHI::AllocationFlagBits::HostAccessSequentialWrite;
 		_spriteBuffer = renderSystem->GetContext()->CreateBuffer(desc);
-		_spriteBuffer->Write(kSpriteVertices);
+		_spriteBuffer->Write(SpriteVertices);
 
 		{
 			for (auto& buffer : _frameDataBuffers) {
@@ -42,9 +42,9 @@ namespace Tourqe::Engine {
 	}
 
 	void SceneRenderer2DSystem::OnUpdate(Scene& scene) {
-		auto submit = _engine->GetSubsystem<GraphicsSubsystem>();
+		auto system = _engine->GetSubsystem<GraphicsSubsystem>();
 
-		submit->Submit([this, &scene](Runtime::RHI::CommandBuffer* cmd) {
+		system->Submit([this, &scene](Runtime::RHI::CommandBuffer* cmd) {
 			auto assetSystem = _engine->GetSubsystem<AssetSubsystem>();
 			auto renderSystem = _engine->GetSubsystem<GraphicsSubsystem>();
 

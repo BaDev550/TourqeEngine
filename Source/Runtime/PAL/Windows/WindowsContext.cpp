@@ -29,22 +29,38 @@ namespace Runtime::PAL {
 			Logger::Warn("WindowsIO", "Data size is 0, nothing to write");
 			return Result("Data size is 0");
 		}
-		{
-			if (!filePath || !FileExists(filePath)) {
-				Logger::Warn("WindowsIO", "File {} does not exist, creating file", filePath.GetPathStr());
-				return Result("File does not exist");
-			}
 
-			std::string pathDir = filePath.GetParentDirectory();
-			if (!DirectoryExists(pathDir)) {
-				Logger::Warn("WindowsIO", "Directory {} does not exist, creating directory", pathDir);
-				Result result = CreateD(pathDir);
-				if (!result) {
-					Logger::Error("WindowsIO", "Failed to create directory {}", pathDir);
-					return Result("Failed to create directory");
-				}
+		std::string pathDir = filePath.GetParentDirectory();
+		if (!pathDir.empty() && !DirectoryExists(pathDir)) {
+			Logger::Warn("WindowsIO", "Directory {} does not exist, creating directory", pathDir);
+			Result result = CreateD(pathDir);
+			if (!result) {
+				Logger::Error("WindowsIO", "Failed to create directory {}", pathDir);
+				return Result("Failed to create directory");
 			}
 		}
+
+		if (!FileExists(filePath)) {
+			Logger::Warn("WindowsIO", "File {} does not exist, creating file", filePath.GetPathStr());
+		}
+
+		const char* mode = (dataOffset > 0 && FileExists(filePath)) ? "r+b" : "wb";
+		FILE* file = fopen(filePath.GetPathCStr(), mode);
+		if (!file) {
+			Logger::Error("WindowsIO", "Failed to open file for writing: {}", filePath.GetPathStr());
+			return Result("Failed to open file");
+		}
+
+		if (dataOffset > 0) { fseek(file, static_cast<long>(dataOffset), SEEK_SET); }
+		usize written = fwrite(data, 1, dataSize, file);
+		fclose(file);
+
+		if (written != dataSize) {
+			Logger::Error("WindowsIO", "Failed to write all data to file: {}", filePath.GetPathStr());
+			return Result("Incomplete write");
+		}
+
+		return Result();
 	}
 
 	Result WindowsContext::WriteToFile(const Path& filePath, const std::vector<u8>& data, usize dataSize, usize dataOffset) { return WriteToFile(filePath, const_cast<char*>(reinterpret_cast<const char*>(data.data())), dataSize, dataOffset); }

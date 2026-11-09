@@ -80,6 +80,7 @@ namespace Runtime::RHI::Utils {
 	constexpr [[nodiscard]] VmaAllocationCreateFlags GetVkAllocationFlags(AllocationFlagBits flagBits) noexcept {
 		VmaAllocationCreateFlags flags = 0;
 		if ((flagBits & AllocationFlagBits::HostAccessSequentialWrite) != AllocationFlagBits::None) flags |= VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+		if ((flagBits & AllocationFlagBits::HostAccessRandom) != AllocationFlagBits::None) flags |= VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
 		if ((flagBits & AllocationFlagBits::CreateMapped) != AllocationFlagBits::None) flags |= VMA_ALLOCATION_CREATE_MAPPED_BIT;
 		return flags;
 	}

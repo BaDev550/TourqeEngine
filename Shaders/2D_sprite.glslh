@@ -1,0 +1,17 @@
+#ifndef SPRITE2D_GLSLH
+#define SPRITE2D_GLSLH
+
+struct SpriteData {			
+	mat4 world;
+	uint frameDataIndex;
+	uint firstVertex;
+	uint vertexBufferID;
+	uint textureID;
+	uint samplerID;
+};
+
+layout(buffer_reference, std430) readonly buffer SpriteBuffer {
+	SpriteData sprites[];
+};
+
+#endif

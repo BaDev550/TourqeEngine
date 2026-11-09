@@ -12,7 +12,7 @@ namespace Runtime::RHI {
 		VulkanBuffer(Context* context, const BufferDesc& desc);
 		virtual ~VulkanBuffer();
 
-		virtual void Write(const void* data, usize size = SIZE_MAX, usize offset = SIZE_MAX) override final;
+		virtual void Write(const void* data, usize size = SIZE_MAX, usize offset = 0) override final;
 		virtual const void* GetMappedPtr() const override { return _mappedPtr; }
 
 		virtual const usize GetSize() const noexcept final { return _desc.size; }
