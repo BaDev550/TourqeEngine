@@ -35,7 +35,7 @@ namespace Tourqe::Engine {
 		virtual Scene* GetOwningScene() const;
 
 		[[nodiscard]] EntityHandle GetEntityHandle() const;
-	protected:
+	private:
 		EntityHandle _handle;
 		Scene* _owningScene;
 

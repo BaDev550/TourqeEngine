@@ -4,6 +4,7 @@
 #include "VulkanContext.h"
 
 #include <Runtime/Memory/Allocator.h>
+#include <Runtime/RHI/ImGui/ImGuiStyle.h>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -19,6 +20,7 @@ namespace Runtime::RHI {
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
 		ImGui::SetCurrentContext(context);
+		ApplyStyle(Accent::Source);
 	}
 
 	void VulkanImGuiContext::CreateNativeImGui() {

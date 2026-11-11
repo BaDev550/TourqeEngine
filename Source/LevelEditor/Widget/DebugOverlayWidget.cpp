@@ -23,7 +23,7 @@ void DebugOverlayWidget::Draw() {
 
 	ImGui::SetNextWindowPos(viewportPos, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(viewportSize, ImGuiCond_Always);
-	ImGui::SetNextWindowBgAlpha(0.0f);
+	ImGui::SetNextWindowBgAlpha(0.2f);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoDecoration |
 		ImGuiWindowFlags_NoNav |
@@ -32,7 +32,9 @@ void DebugOverlayWidget::Draw() {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::Begin(GetClassName().data(), nullptr, flags);
 
-	ImGui::Text("FPS: %.1f (%.2f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+	f32 deltaTime = Engine::Get()->GetTime().GetDeltaTime();
+	f32 fps = 1.0f / deltaTime;
+	ImGui::Text("FPS: %.1f (%.2f ms)", fps, 1000.0f / fps);
 	ImGui::Text("Resolution: %dx%d", window->GetWidth(), window->GetHeight());
 
 	ImGui::Separator();

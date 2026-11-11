@@ -6,6 +6,7 @@
 #include <Engine/Asset/AssetSubsystem.h>
 #include <Engine/Asset/Texture/Texture2D.h>
 #include <Engine/World/Components/SpriteComponent.h>
+#include <Engine/Input/InputSubsystem.h>
 
 #include <Engine/World/ECS/Scene.h>
 #include <Engine/Core/Engine.h>
@@ -20,18 +21,42 @@ public:
 		Logger::Info("Erturul", "SunguEntity created");
 		auto assetSystem = Engine::Get()->GetSubsystem<AssetSubsystem>();
 
-		Texture2D* boxtexture = assetSystem->Get<Texture2D>("sungu.jpg");
+		Texture2D* boxtexture = assetSystem->Get<Texture2D>("player_sprite.png");
 
-		auto* spriteComponent = _owningScene->AddComponent<SpriteComponent>(_handle);
+		auto* spriteComponent = GetOwningScene()->AddComponent<SpriteComponent>(GetEntityHandle());
 		spriteComponent->TextureAssetHandle = boxtexture->GetAssetHandle();
 		spriteComponent->Visible = true;
 	}
 
 	virtual void OnUpdate() final {
-		if (GetPosition().x > 5.0f) {
-			SetPosition(Runtime::Math::Vec3(-5.0f, 0.0f, 0.0f));
+		auto* inputSystem = Engine::Get()->GetSubsystem<InputSubsystem>();
+
+		if (inputSystem) {
+			if (inputSystem->IsKeyPressed(Runtime::KeyCode::W)) {
+				SetPosition(
+					GetPosition() + 
+					Runtime::Math::Vec3(0.0f, 0.6f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime()
+				);
+			}
+			if (inputSystem->IsKeyPressed(Runtime::KeyCode::S)) {
+				SetPosition(
+					GetPosition() +
+					Runtime::Math::Vec3(0.0f, -0.6f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime()
+				);
+			}
+			if (inputSystem->IsKeyPressed(Runtime::KeyCode::D)) {
+				SetPosition(
+					GetPosition() +
+					Runtime::Math::Vec3(0.6f, 0.0f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime()
+				);
+			}
+			if (inputSystem->IsKeyPressed(Runtime::KeyCode::A)) {
+				SetPosition(
+					GetPosition() +
+					Runtime::Math::Vec3(-0.6f, 0.0f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime()
+				);
+			}
 		}
-		SetPosition(GetPosition() + Runtime::Math::Vec3(0.01f, 0.0f, 0.0f));
 	}
 
 	virtual void OnDestroy() final {

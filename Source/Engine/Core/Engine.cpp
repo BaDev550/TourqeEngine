@@ -9,6 +9,19 @@
 #include <queue>
 
 namespace Tourqe::Engine {
+	void EngineTime::Update() { // TODO(0x): move this to another file
+		auto now = std::chrono::high_resolution_clock::now();
+		if (_lastTime.time_since_epoch().count() == 0) {
+			_lastTime = now;
+			return;
+		}
+
+		std::chrono::duration<f32> delta = now - _lastTime;
+		_deltaTime = delta.count();
+		_lastTime = now;
+
+	}
+	
 	Engine* Engine::_instance = nullptr;
 
 	Engine::Engine() {
@@ -36,6 +49,8 @@ namespace Tourqe::Engine {
 		SortAndInitializeSystems();
 		
 		while (_running) {
+			_time.Update();
+
 			for (const auto& subsystem : _activeSubsystemList) {
 				subsystem->OnUpdate();
 			}

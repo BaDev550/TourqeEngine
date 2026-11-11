@@ -23,10 +23,25 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 	auto assetSystem = _engine->GetSubsystem<AssetSubsystem>();
 	auto context = renderSystem->GetContext();
 
-	Texture2D* boxtexture = assetSystem->Get<Texture2D>("warrior_bg.jpg");
-	Texture2D* rocktexture = assetSystem->Get<Texture2D>("player_sprite.png");
-	Texture2D* transparenttexture = assetSystem->Get<Texture2D>("Org.png");
-	Texture2D* guvenTexture = assetSystem->Get<Texture2D>("guvenhead.png");
+	//Texture2D* boxtexture = assetSystem->Get<Texture2D>("warrior_bg.jpg");
+	//Texture2D* rocktexture = assetSystem->Get<Texture2D>("player_sprite.png");
+	//Texture2D* transparenttexture = assetSystem->Get<Texture2D>("Org.png");
+	
+	//{
+	//	for (int i = -60; i < 60; i++) {
+	//		EntityHandle entity = worldSystem->GetActiveScene()->CreateEntity();
+	//		auto* transform = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(entity);
+	//		transform->position = Runtime::Math::Vec3(i * 1.0f, -1.0f, 0.0f);
+	//		transform->scale = Runtime::Math::Vec3(3.0f, 3.0f, 3.0f);
+	//
+	//		auto* sprite = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(entity);
+	//		sprite->TextureAssetHandle = rocktexture->GetAssetHandle();
+	//		sprite->Visible = true;
+	//
+	//		auto* idenity = worldSystem->GetActiveScene()->AddComponent<IdenityComponent>(entity);
+	//		idenity->name = "Entity_" + std::to_string(i);
+	//	}
+	//}
 
     return Runtime::Result();
 }

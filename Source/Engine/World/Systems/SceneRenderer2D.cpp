@@ -76,7 +76,7 @@ namespace Tourqe::Engine {
 
 					Texture2D* asset = static_cast<Texture2D*>(assetSystem->TryAsset(sprite.TextureAssetHandle));
 					if (!asset) return;
-
+					
 					transform.world =
 						Runtime::Math::Mat4::Translation(transform.position) *
 						Runtime::Math::Mat4::Rotate(transform.rotation) *
@@ -88,7 +88,7 @@ namespace Tourqe::Engine {
 					item.world = transform.world;
 					item.firstVertex = 0;
 					item.vertexCount = 6;
-					item.instanceCount = 1;
+					item.instanceCount = 1; // FIXME(0x): wtf
 					item.vertexBufferIndex = _spriteBuffer->GetBindlessIndex();
 					frame.queues.Push(RenderQueue::Sprite, item);
 					});

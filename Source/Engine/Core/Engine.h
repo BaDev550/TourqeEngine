@@ -11,6 +11,18 @@ namespace Tourqe::Engine {
 	class JobSystem;
 	class PlatformSystem;
 
+	class EngineTime final {
+	public:
+		EngineTime() = default;
+		~EngineTime() = default;
+		void Update();
+
+		f32 GetDeltaTime() const { return _deltaTime; }
+	private:
+		f32 _deltaTime = 0.0f;
+		std::chrono::high_resolution_clock::time_point _lastTime;
+	};
+
 	class ENGINE_API Engine final {
 	public:
 		Engine();
@@ -45,6 +57,8 @@ namespace Tourqe::Engine {
 			return nullptr;
 		}
 
+		[[nodiscard]] const EngineTime& GetTime() const { return _time; }
+
 		ReflectionSystem* GetReflectionSystem() const { return _reflectionSystem; }
 		PluginSystem* GetPluginSystem() const { return _pluginSystem; }
 		JobSystem* GetJobSystem() const { return _jobSystem; }
@@ -54,6 +68,7 @@ namespace Tourqe::Engine {
 		static Engine* _instance;
 
 		b8 _running = true;
+		EngineTime _time;
 
 		std::vector<Subsystem*> _pendingInitList;
 		std::unordered_map<std::type_index, usize> _systemInitLookupTable;

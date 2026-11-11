@@ -4,6 +4,8 @@
 #include <Runtime/Definitions/Logger.h>
 #include <imgui.h>
 
+#include <Runtime/PAL/Windows/WindowsKeyCodes.h>
+
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace Runtime::PAL {
@@ -48,6 +50,26 @@ namespace Runtime::PAL {
 		case WM_DESTROY: {
 			PostQuitMessage(0);
 			return 0;
+		}
+		case WM_KEYDOWN: {
+			KeyCode keycode = TranslateWin32Key(wParam, lParam);
+			b8 repeat = (lParam & 0x40000000) != 0;
+
+			PlatformKeyPreseedEvent event{ keycode };
+			if (desc->eventCallback) {
+				desc->eventCallback(std::move(&event));
+			}
+			break;
+		}
+		case WM_KEYUP: {
+			KeyCode keycode = TranslateWin32Key(wParam, lParam);
+			b8 repeat = (lParam & 0x40000000) != 0;
+
+			PlatformKeyReleasedEvent event{ keycode };
+			if (desc->eventCallback) {
+				desc->eventCallback(std::move(&event));
+			}
+			break;
 		}
 		default:
 			break;

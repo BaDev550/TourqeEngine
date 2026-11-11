@@ -12,6 +12,7 @@ namespace Runtime::PAL {
 		virtual void PollEvents() = 0;
 		[[nodiscard]] virtual WindowHandle GetHandle() const = 0;
 		[[nodiscard]] virtual PALInstance GetInstance() const = 0;
+		[[nodiscard]] virtual WindowDesc& GetDesc() = 0;
 		[[nodiscard]] virtual const u32 GetWidth() const = 0;
 		[[nodiscard]] virtual const u32 GetHeight() const = 0;
 		[[nodiscard]] virtual const b8 IsMinimized() const = 0;
