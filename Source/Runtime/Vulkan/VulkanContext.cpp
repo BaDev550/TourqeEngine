@@ -279,7 +279,7 @@ namespace Runtime::RHI {
 			pcRanges.reserve(desc.pushConstantRanges.size());
 			for (const auto& pc : desc.pushConstantRanges) {
 				VkPushConstantRange range{};
-				range.size = (pc.size * sizeof(u32));
+				range.size = pc.size;
 				range.offset = pc.offset;
 				range.stageFlags = VK_SHADER_STAGE_ALL;
 				pcRanges.push_back(range);
@@ -394,7 +394,7 @@ namespace Runtime::RHI {
 			multiSampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
 			VkPipelineColorBlendAttachmentState attachState{};
-			attachState.blendEnable = VK_TRUE;
+			attachState.blendEnable = desc.blending ? VK_TRUE : VK_FALSE;
 			attachState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 			attachState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 			attachState.colorBlendOp = VK_BLEND_OP_ADD;
@@ -564,6 +564,18 @@ namespace Runtime::RHI {
 			barrier.srcAccessMask = 0;
 			barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 			srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		}
+		else if (vkOldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && vkNewLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+			barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+		else if (vkOldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && vkNewLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+			barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		}
 		else {

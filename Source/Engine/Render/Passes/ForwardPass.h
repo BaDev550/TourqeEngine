@@ -19,23 +19,6 @@ namespace Tourqe::Engine {
 		virtual i32 GetOrder() const final { return 0; }
 		virtual RenderStage GetStage() const final { return RenderStage::Scene; }
 	private:
-		static constexpr u32 MaxSprites = 1000;
-
-		struct SpritePushConstant {
-			u64 spriteDataBDA = ~0ull;
-		};
-
-		struct SpriteData {
-			Runtime::Math::Mat4 world;
-			u32 frameDataIndex;
-			u32 firstVertex;
-			u32 vertexBufferID;
-			u32 diffuseTextureID;
-			u32 normalTextureID;
-			u32 samplerID;
-			u32 pad[2];
-		};
-
 		std::vector<SpriteData> _spriteDatas;
 		Runtime::RHI::Buffer* _spriteDataStorageBuffer = nullptr;
 		Runtime::RHI::Pipeline* _forwardPassPipeline = nullptr;

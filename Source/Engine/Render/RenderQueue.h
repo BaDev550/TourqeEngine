@@ -16,6 +16,7 @@ namespace Tourqe::Engine {
 	public:
 		void Push(RenderQueue queue, const RenderItem& item) { _items[static_cast<u32>(queue)].push_back(item); }
 		void Clear() { for (auto& queue : _items) queue.clear(); }
+		std::vector<RenderItem>& Get(RenderQueue queue) { return _items[static_cast<u32>(queue)]; }
 		const std::vector<RenderItem>& Get(RenderQueue queue) const { return _items[static_cast<u32>(queue)]; }
 	private:
 		std::array<std::vector<RenderItem>, static_cast<usize>(RenderQueue::Count)> _items;

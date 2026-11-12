@@ -4,9 +4,11 @@
 namespace Runtime::RHI {
 	enum class Format : u8 {
 		Undefined = 0,
+		R16_UNORM,
 		RG8,
 		RGB8,
 		RGBA8,
+		RGBA8_UNORM,
 		RGBA16,
 		RGBA,
 

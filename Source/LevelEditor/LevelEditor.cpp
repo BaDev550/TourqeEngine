@@ -52,6 +52,7 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 	auto* sprite = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(bgentity);
 	sprite->TextureAssetHandle = bgtexture->GetAssetHandle();
 	sprite->Visible = true;
+	sprite->CastShadow = false;
 	
 	auto* idenity = worldSystem->GetActiveScene()->AddComponent<IdenityComponent>(bgentity);
 	idenity->name = "Background_";

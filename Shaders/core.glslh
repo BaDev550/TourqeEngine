@@ -1,6 +1,8 @@
 #ifndef CORE_GLSLH
 #define CORE_GLSLH
 
+const float PI = 3.14159265359;
+
 #extension GL_EXT_nonuniform_qualifier : require
 #extension GL_EXT_buffer_reference : require
 

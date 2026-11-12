@@ -8,6 +8,7 @@
 #include <Engine/World/Components/TransformComponent.h>
 #include <Engine/World/Components/SpriteComponent.h>
 #include <Engine/World/Components/IdenityComponent.h>
+#include <Engine/World/Components/PointLightComponent.h>
 #include <imgui.h>
 
 using namespace Tourqe::Engine;
@@ -60,6 +61,12 @@ void InspectorWidget::Draw() {
 			ImGui::Separator();
 		}
 
+		if (scene->HasComponent<PointLightComponent>(ctx.selectedEntity)) {
+			PointLightComponent* light = scene->FindComponent<PointLightComponent>(ctx.selectedEntity);
+			DrawComponent(reflectionSystem, light);
+			ImGui::Separator();
+		}
+
 		if (scriptSystem && scriptSystem->IsScriptable(ctx.selectedEntity)) {
 			if (GameObject* gameObject = scriptSystem->GetGameObject(ctx.selectedEntity)) {
 				const Runtime::Reflection::Type* scriptType = reflectionSystem->GetType(std::string(gameObject->GetClassName()));
@@ -91,6 +98,12 @@ void InspectorWidget::Draw() {
 			if (!scene->HasComponent<SpriteComponent>(ctx.selectedEntity)) {
 				if (ImGui::MenuItem("Sprite Component")) {
 					scene->AddComponent<SpriteComponent>(ctx.selectedEntity);
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			if (!scene->HasComponent<PointLightComponent>(ctx.selectedEntity)) {
+				if (ImGui::MenuItem("Point Light Component")) {
+					scene->AddComponent<PointLightComponent>(ctx.selectedEntity);
 					ImGui::CloseCurrentPopup();
 				}
 			}

@@ -1,0 +1,15 @@
+#ifndef LIGHT_GLSLH
+#define LIGHT_GLSLH
+
+struct LightData {
+    vec2 lightPos;
+    float lightRadius;
+    float lightIntensity;
+    vec4 lightColor;
+};
+
+layout(buffer_reference, std430, buffer_reference_align = 16) readonly buffer LightBuffer {
+    LightData lights[];
+};
+
+#endif

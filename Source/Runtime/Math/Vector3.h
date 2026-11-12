@@ -20,6 +20,7 @@ namespace Runtime::Math {
 		Vec3 operator*(const Vec3& v) const { return { x * v.x, y * v.y, z * v.z }; }
 		Vec3 operator*(const f32& v) const { return { x * v, y * v, z * v }; }
 		Vec3 operator/(const Vec3& v) const { return { x / v.x, y / v.y, z / v.z }; }
+		Vec3 operator-() const { return { -x, -y, -z }; }
 
 		[[nodiscard]] const f32 Dot(const Vec3& v2) const { return ((x * v2.x) + (y * v2.y) + (z * v2.z)); }
 		[[nodiscard]] const f32 Length() const { return sqrt((x * x) + (y * y) + (z * z)); }

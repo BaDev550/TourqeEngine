@@ -20,9 +20,11 @@ namespace Runtime::RHI::Utils {
 		switch (format)
 		{
 		case Format::Undefined: return VK_FORMAT_UNDEFINED;
+		case Format::R16_UNORM: return VK_FORMAT_R16_UNORM;
 		case Format::RG8: return VK_FORMAT_R8G8_UNORM;
 		case Format::RGB8: return VK_FORMAT_R8G8B8_UNORM;
 		case Format::RGBA8: return VK_FORMAT_R8G8B8A8_SRGB;
+		case Format::RGBA8_UNORM: return VK_FORMAT_R8G8B8A8_UNORM;
 		case Format::RGBA16: return VK_FORMAT_R16G16B16_SFLOAT;
 		case Format::RGBA: return VK_FORMAT_R32G32B32A32_SFLOAT;
 		case Format::BC7: return VK_FORMAT_BC7_SRGB_BLOCK;

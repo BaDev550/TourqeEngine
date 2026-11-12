@@ -1,4 +1,4 @@
-#include "ForwardRenderPass.h"
+#include "ForwardPass.h"
 #include <Runtime/Definitions/Types.h>
 #include <Engine/Asset/AssetSubsystem.h>
 #include <Engine/Platform/Window/WindowSubsystem.h>
@@ -24,7 +24,7 @@ namespace Tourqe::Engine {
 			vertexDesc.vertexShader = &forwardPassVertexShader->GetDesc();
 			vertexDesc.fragmentShader = &forwardPassFragmentShader->GetDesc();
 			vertexDesc.pushConstantRanges = { pcRange };
-			vertexDesc.blending = false;
+			vertexDesc.blending = true;
 			vertexDesc.depthTest = false;
 
 			_forwardPassPipeline = renderSystem->GetContext()->CreatePipeline(vertexDesc);
@@ -39,8 +39,6 @@ namespace Tourqe::Engine {
 	}
 
 	void ForwardRenderPass::OnDestroy() {
-		auto* renderSystem = GetEngine()->GetSubsystem<GraphicsSubsystem>();
-		renderSystem->GetContext()->WaitDeviceIdle();
 		Runtime::Mem::Allocator::Destroy(_spriteDataStorageBuffer);
 		Runtime::Mem::Allocator::Destroy(_forwardPassPipeline);
 	}
@@ -79,10 +77,6 @@ namespace Tourqe::Engine {
 
 			auto spriteQueue = frame.GetDrawQueue(RenderQueue::Sprite);
 			if (!spriteQueue.empty()) {
-				std::stable_sort(spriteQueue.begin(), spriteQueue.end(), [](const RenderItem& a, const RenderItem& b) {
-					return a.drawOrder < b.drawOrder;
-					});
-
 				_spriteDatas.resize(spriteQueue.size());
 
 				int i = 0;
@@ -111,7 +105,6 @@ namespace Tourqe::Engine {
 				}
 			}
 			frame.cmd->EndDynamicRendering();
-			frame.cmd->TransitionImageLayout(frame.color, Runtime::RHI::ImageLayout::PresentSrc);
 		}
 	}
 }

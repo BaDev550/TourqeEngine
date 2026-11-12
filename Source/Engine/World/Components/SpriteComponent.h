@@ -14,6 +14,9 @@ namespace Tourqe::Engine {
 		TPROP(Edit, Serialize)
 		b8 Visible;
 
+		TPROP(Edit, Serialize)
+		b8 CastShadow = true;
+
 		TPROP(Edit, Serialize, Catagory = "Render")
 		int zOrder = 0;
 	};

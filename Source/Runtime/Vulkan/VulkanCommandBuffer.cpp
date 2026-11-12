@@ -33,6 +33,7 @@ namespace Runtime::RHI {
 		VulkanContext* vkContext = GetOwningRHIContext<VulkanContext>();
 
 		u32 colorAttachmentCount = static_cast<uint32_t>(info.colorAttachments.size());
+		b8 hasDepth = info.depthAttachment;
 
 		std::vector<VkRenderingAttachmentInfo> colorAttachmentInfos(colorAttachmentCount);
 		for (uint32_t i = 0; i < colorAttachmentCount; i++) {
@@ -56,14 +57,16 @@ namespace Runtime::RHI {
 		}
 
 		VkRenderingAttachmentInfo depthAttachmentInfo{};
-		VulkanImage* vkDepthImage = static_cast<VulkanImage*>(info.depthAttachment);
-		depthAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-		depthAttachmentInfo.imageView = vkDepthImage->GetImageView();
-		depthAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		depthAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depthAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		depthAttachmentInfo.clearValue.depthStencil = { 1.0f, 0 };
-		vkContext->TransitionImageLayout(_commandBuffer, vkDepthImage, ImageLayout::DepthAttachment);
+		if (hasDepth) {
+			VulkanImage* vkDepthImage = static_cast<VulkanImage*>(info.depthAttachment);
+			depthAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			depthAttachmentInfo.imageView = vkDepthImage->GetImageView();
+			depthAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			depthAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			depthAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			depthAttachmentInfo.clearValue.depthStencil = { 1.0f, 0 };
+			vkContext->TransitionImageLayout(_commandBuffer, vkDepthImage, ImageLayout::DepthAttachment);
+		}
 
 		VkRect2D renderArea{};
 		renderArea.offset.x = 0;
@@ -76,7 +79,7 @@ namespace Runtime::RHI {
 		renderInfo.layerCount = 1;
 		renderInfo.colorAttachmentCount = colorAttachmentCount;
 		renderInfo.pColorAttachments = colorAttachmentInfos.data();
-		renderInfo.pDepthAttachment = &depthAttachmentInfo;
+		renderInfo.pDepthAttachment = hasDepth ? &depthAttachmentInfo : nullptr;
 
 		if (debugInfo) {
 			VkDebugUtilsLabelEXT passLabel{};

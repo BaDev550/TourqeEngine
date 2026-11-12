@@ -8,6 +8,7 @@ namespace Tourqe::Engine {
 	struct RenderItem {
 		Runtime::Math::Mat4 world = Runtime::Math::Mat4();
 
+		b8 castShadow = true;
 		u32 drawOrder = 0;
 		u32 textureID = 0;
 		u32 samplerID = 0;
