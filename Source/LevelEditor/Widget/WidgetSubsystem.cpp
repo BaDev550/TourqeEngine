@@ -71,7 +71,7 @@ void WidgetSubsystem::OnUpdate() {
 			Runtime::RHI::PassDebugInfo debug{};
 			debug.label = "WidgetPass";
 			debug.color = glm::vec3(1.0f, 1.0f, 1.0f);
-
+			
 			platform->ImGuiNewFrame();
 			imgui->Begin();
 

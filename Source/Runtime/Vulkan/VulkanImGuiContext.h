@@ -2,6 +2,7 @@
 
 #include <Runtime/RHI/ImGui/ImGuiContext.h>
 #include <Runtime/PAL/Window/Window.h>
+#include <Runtime/Vulkan/VulkanDescriptorHeap.h>
 #include <vulkan/vulkan.h>
 
 namespace Runtime::RHI {
@@ -18,9 +19,12 @@ namespace Runtime::RHI {
 		virtual void CreateNativeImGui() final;
 		virtual void* GetNativeImGui() const final;
 		virtual void Flush(Runtime::RHI::CommandBuffer* cmd) const final;
+
+		virtual ImTextureID AddTexture(Image* image) final;
+		virtual void UpdateTexture(ImTextureID id) final;
 	private:
 		VulkanContext& _owner;
 		VulkanQueue* _queue;
-		VkDescriptorPool _imguiDescriptorPool;
+		VulkanDescriptorHeap* _heap;
 	};
 }

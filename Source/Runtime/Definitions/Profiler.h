@@ -7,18 +7,12 @@
 #include <string_view>
 
 namespace Runtime {
-	class Profiler final {
+	class RUNTIME_API Profiler final {
 	public:
-		static Profiler& Get() { // FIXME(0x): needs to moved into a engine class or a subsystem
-			static Profiler instance;
-			return instance;
-		}
+		static Profiler& Get();
 
-		void Record(const std::string& name, double durationMs) {
-			_timings[name] = durationMs;
-		}
-
-		const std::unordered_map<std::string, double>& GetTimings() const { return _timings; }
+		void Record(const std::string& name, double durationMs);
+		const std::unordered_map<std::string, double>& GetTimings() const;
 	private:
 		std::unordered_map<std::string, double> _timings;
 	};

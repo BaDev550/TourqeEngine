@@ -14,6 +14,7 @@ namespace Tourqe::LevelEditor {
 		bool showHierarchy = true;
 		bool showInspector = true;
 		bool showAssetBrowser = true;
-		bool showProfiler = true;
+		bool showProfiler = false;
+		bool showConsolle = true;
 	};
 }

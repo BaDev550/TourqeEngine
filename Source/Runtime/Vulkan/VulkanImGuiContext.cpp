@@ -2,6 +2,8 @@
 #include "VulkanQueue.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanContext.h"
+#include "VulkanImage.h"
+#include "VulkanDescriptorSet.h"
 
 #include <Runtime/Memory/Allocator.h>
 #include <Runtime/RHI/ImGui/ImGuiStyle.h>
@@ -39,23 +41,21 @@ namespace Runtime::RHI {
 	}
 
 	void VulkanImGuiContext::CreateNativeImGui() {
-		VkDescriptorPoolSize pool_sizes[] = {
-			{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+		std::vector<DescriptorHeapSize> sizes = {
+			{ DescriptorType::SampledImage, 1000 },
+			{ DescriptorType::StorageBuffer, 1000 },
+			{ DescriptorType::UniformBuffer, 1000 },
+			{ DescriptorType::StorageImage, 1000 },
+			{ DescriptorType::Sampler, 1000 }
 		};
 
-		VkDescriptorPoolCreateInfo pool_info = {};
-		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-		pool_info.maxSets = 1000;
-		pool_info.poolSizeCount = std::size(pool_sizes);
-		pool_info.pPoolSizes = pool_sizes;
+		DescriptorHeapDesc desc{};
+		desc.sizes = sizes;
+		desc.flags = DescriptorHeapCreateFlags::FreeDescriptorSet;
+		desc.maxDescriptorSetAllocation = 1000;
 
-		vkCreateDescriptorPool(_owner.GetDevice(), &pool_info, nullptr, &_imguiDescriptorPool); // add check
-
+		_heap = static_cast<VulkanDescriptorHeap*>(_owner.CreateDescriptorHeap(desc));
+		
 		ImGui_ImplVulkan_InitInfo init_info = {};
 		init_info.Instance = _owner.GetInstance();
 		init_info.ApiVersion = VK_API_VERSION_1_3;
@@ -63,7 +63,7 @@ namespace Runtime::RHI {
 		init_info.Device = _owner.GetDevice();
 		init_info.Queue = _queue->GetVkQueue();
 		init_info.QueueFamily = _queue->GetQueueFamilyIndex();
-		init_info.DescriptorPool = _imguiDescriptorPool;
+		init_info.DescriptorPool = _heap->GetVkPool();
 		init_info.MinImageCount = 2;
 		init_info.ImageCount = 2;
 		init_info.UseDynamicRendering = true;
@@ -92,8 +92,13 @@ namespace Runtime::RHI {
 		: _owner(*owner), _queue(static_cast<VulkanQueue*>(queue)) { }
 
 	VulkanImGuiContext::~VulkanImGuiContext() {
+		for (auto& ds : _heap->GetDescriptorSets()) {
+			VulkanDescriptorSet* vkDs = static_cast<VulkanDescriptorSet*>(ds);
+			ImGui_ImplVulkan_RemoveTexture(vkDs->GetDescriptorSet());
+		}
+
 		ImGui_ImplVulkan_Shutdown();
-		vkDestroyDescriptorPool(_owner.GetDevice(), _imguiDescriptorPool, nullptr);
+		Mem::Allocator::Destroy(_heap);
 		ImGui::DestroyContext();
 	}
 
@@ -104,6 +109,18 @@ namespace Runtime::RHI {
 	void VulkanImGuiContext::Flush(Runtime::RHI::CommandBuffer* cmd) const {
 		VulkanCommandBuffer* vkCmd = static_cast<VulkanCommandBuffer*>(cmd);
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), vkCmd->GetVkCommandBuffer());
+	}
+
+	ImTextureID VulkanImGuiContext::AddTexture(Image* image) {
+		VulkanImage* vkImage = static_cast<VulkanImage*>(image);
+		VkSampler vkSampler = _owner.GetSampler(image->GetStaticSampler());
+
+		VkDescriptorSet set = ImGui_ImplVulkan_AddTexture(vkSampler, vkImage->GetImageView(), vkImage->GetImageLayout());
+		return (ImTextureID)set;
+	}
+
+	void VulkanImGuiContext::UpdateTexture(ImTextureID id) {
+
 	}
 
 	void* VulkanImGuiContext::GetNativeImGui() const { return ImGui::GetCurrentContext(); }

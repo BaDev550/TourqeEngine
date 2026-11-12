@@ -58,7 +58,7 @@ namespace Runtime::Math {
 			return res;
 		}
 
-		[[nodiscard]] const Quat FromEuler(const Math::Vec3& eRot) const {
+		[[nodiscard]] static const Quat FromEuler(const Math::Vec3& eRot) {
 			constexpr float DegToRad = PI / 180.0f;
 			f64 cy = std::cos(eRot.z * DegToRad * 0.5f);
 			f64 sy = std::sin(eRot.z * DegToRad * 0.5f);

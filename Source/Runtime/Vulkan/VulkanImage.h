@@ -19,6 +19,7 @@ namespace Runtime::RHI {
 		virtual const u32 GetHeight() const noexcept override final { return _desc.height; }
 		virtual u32 GetBindlessIndex() noexcept override;
 		virtual u32 GetSamplerIndex() noexcept override;
+		virtual StaticSampler GetStaticSampler() const noexcept final { return _desc.sampler; }
 
 		[[nodiscard]] VkImage GetImage() const { return _image; }
 		[[nodiscard]] VkImageView GetImageView() const { return _imageView; }

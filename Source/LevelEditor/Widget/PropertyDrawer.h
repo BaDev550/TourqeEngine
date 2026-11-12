@@ -53,6 +53,18 @@ namespace {
 						ImGui::DragFloat3(label, &val->x, step);
 					}
 				}
+				else if (propType == typeid(Runtime::Math::Quat)) {
+					auto* val = prop.GetPtr<Runtime::Math::Quat>(instance);
+
+					Math::Vec3 eulerDeg = val->ToEuler();
+					eulerDeg.x = glm::degrees(eulerDeg.x);
+					eulerDeg.y = glm::degrees(eulerDeg.y);
+					eulerDeg.z = glm::degrees(eulerDeg.z);
+
+					if (ImGui::DragFloat3(label, &eulerDeg.x, step)) {
+						*val = Runtime::Math::Quat::FromEuler(eulerDeg);
+					}
+				}
 				else if (propType == typeid(f32)) {
 					ImGui::DragFloat(label, prop.GetPtr<f32>(instance), step);
 				}
@@ -131,6 +143,11 @@ namespace {
 							ImGui::EndDragDropTarget();
 						}
 					}
+				}
+				else if (propType == typeid(ImTextureID)) {
+					ImTextureID* id = prop.GetPtr<ImTextureID>(instance);
+					if (id && *id != ImTextureID_Invalid) 
+						ImGui::Image(*id, ImVec2(100.0f, 100.0f)); // TEMP
 				}
 				else {
 					ImGui::TextDisabled("UNKNOWNED TYPE: %s (%zu bytes)", label, prop.GetSize());

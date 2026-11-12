@@ -15,5 +15,6 @@ namespace Runtime::RHI {
 		virtual const u32 GetHeight() const noexcept = 0;
 		virtual u32 GetBindlessIndex() noexcept = 0;
 		virtual u32 GetSamplerIndex() noexcept = 0;
+		virtual StaticSampler GetStaticSampler() const noexcept = 0;
 	};
 }

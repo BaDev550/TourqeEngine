@@ -5,6 +5,8 @@
 #include <string>
 #include <print>
 #include <string_view>
+#include <vector> 
+#include <mutex>
 
 enum class LogLevel : u8 {
 	Info = 0,
@@ -13,7 +15,14 @@ enum class LogLevel : u8 {
 	Fatal
 };
 
-class Logger final {
+struct LogEntry {
+	LogLevel level;
+	std::string category;
+	std::string message;
+	std::string timeStr;
+};
+
+class RUNTIME_API Logger final {
 public:
 	template<typename... Args>
 	static void Info(std::string_view catagory, std::format_string<Args...> fmt, Args&&... args) {
@@ -44,35 +53,9 @@ public:
 		Print(LogLevel::Fatal, catagory, msg);
 		std::abort();
 	}
+
+	static const std::vector<LogEntry>& GetEntries();
+	static void Clear();
 private:
-	static void Print(LogLevel level, std::string_view catagory, std::string_view msg) {
-		const char* name = "Info";
-		const char* color = "\033[90m";
-
-		switch (level)
-		{
-		case LogLevel::Info:
-			name = "Info";
-			color = "\033[32m";
-			break;
-		case LogLevel::Warn:
-			name = "Warn";
-			color = "\033[33m";
-			break;
-		case LogLevel::Error:
-			name = "Error";
-			color = "\033[31m";
-			break;
-		case LogLevel::Fatal:
-			name = "Fatal";
-			color = "\033[35m";
-			break;
-		default:
-			break;
-		}
-
-		const auto now = std::chrono::current_zone()->to_local(std::chrono::system_clock::now());
-		const auto time = std::chrono::floor<std::chrono::seconds>(now);
-		std::println("[{:%H:%M:%S}][{}][{}{}\033[0m]: {}", time, catagory, color, name, msg);
-	}
+	static void Print(LogLevel level, std::string_view category, std::string_view msg);
 };

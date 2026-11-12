@@ -4,6 +4,7 @@
 #include <Runtime/Definitions/Logger.h>
 
 #include <Engine/Asset/AssetSubsystem.h>
+#include <Engine/Graphics/GraphicsSubsystem.h>
 #include <Engine/Asset/Texture/Texture2D.h>
 #include <Engine/World/Components/SpriteComponent.h>
 #include <Engine/Input/InputSubsystem.h>
@@ -21,10 +22,10 @@ public:
 		Logger::Info("Erturul", "SunguEntity created");
 		auto assetSystem = Engine::Get()->GetSubsystem<AssetSubsystem>();
 
-		Texture2D* boxtexture = assetSystem->Get<Texture2D>("Assets/Dungeon/priest1_v1_1.png");
+		_playerSprite = assetSystem->Get<Texture2D>("Assets/Dungeon/priest1_v1_1.png");
 
 		auto* spriteComponent = GetOwningScene()->AddComponent<SpriteComponent>(GetEntityHandle());
-		spriteComponent->TextureAssetHandle = boxtexture->GetAssetHandle();
+		spriteComponent->TextureAssetHandle = _playerSprite->GetAssetHandle();
 		spriteComponent->Visible = true;
 		spriteComponent->zOrder = 100;
 
@@ -33,6 +34,7 @@ public:
 
 	virtual void OnUpdate() final {
 		auto* inputSystem = Engine::Get()->GetSubsystem<InputSubsystem>();
+		auto* graphicsSystem = Engine::Get()->GetSubsystem<GraphicsSubsystem>();
 
 		if (inputSystem) {
 			if (inputSystem->IsKeyPressed(Runtime::KeyCode::W)) {
@@ -63,6 +65,10 @@ public:
 			}
 		}
 		SetRotation(Runtime::Math::Vec3(0.0f, _direction == -1.0f ? 180.0f : 0.0f , 0.0f));
+
+		if (_playerSprite->GetAssetState() == AssetState::Ready && _id == ImTextureID_Invalid) {
+			_id = graphicsSystem->GetImGuiContext()->AddTexture(_playerSprite->_image);
+		}
 	}
 
 	virtual void OnDestroy() final {
@@ -74,4 +80,9 @@ public:
 
 	TPROP(ReadOnly, Category = "Movement")
 	f32 _direction = 1.0f;
+
+	TPROP(ReadOnly)
+	ImTextureID _id = ImTextureID_Invalid;
+
+	Texture2D* _playerSprite;
 };

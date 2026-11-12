@@ -24,22 +24,12 @@ void EditorMenuBarWidget::Draw() {
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Entity")) {
-			auto* worldSystem = Engine::Get()->GetSubsystem<WorldSubsystem>();
-			Scene* scene = worldSystem ? worldSystem->GetActiveScene() : nullptr;
-
-			if (ImGui::MenuItem("Create Empty Entity", nullptr, false, scene != nullptr)) {
-				EntityHandle ent = scene->CreateEntity();
-				ctx.selectedEntity = ent;
-			}
-			ImGui::EndMenu();
-		}
-
 		if (ImGui::BeginMenu("Window")) {
 			ImGui::MenuItem("Scene Outliner", nullptr, &ctx.showHierarchy);
 			ImGui::MenuItem("Inspector", nullptr, &ctx.showInspector);
 			ImGui::MenuItem("Asset Browser", nullptr, &ctx.showAssetBrowser);
 			ImGui::MenuItem("Performance & Stats", nullptr, &ctx.showProfiler);
+			ImGui::MenuItem("Consolle", nullptr, &ctx.showConsolle);
 			ImGui::EndMenu();
 		}
 

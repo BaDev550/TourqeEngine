@@ -13,6 +13,7 @@ namespace Runtime::RHI {
 
 		virtual DescriptorSet* AllocDescriptorSet(const DescriptorSetAllocInfo& allocInfo) final;
 
+		[[nodiscard]] VkDescriptorPool GetVkPool() const { return _pool; }
 		[[nodiscard]] virtual std::vector<DescriptorSet*>& GetDescriptorSets() noexcept final { return _sets; }
 		[[nodiscard]] virtual const DescriptorHeapDesc& GetDesc() const noexcept final { return _desc; }
 	private:
