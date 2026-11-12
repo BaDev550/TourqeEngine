@@ -16,7 +16,7 @@ layout(push_constant) uniform ShadowMapPC {
     uint maxLights;
 } pc;
 
-const float THRESHOLD = 0.5;
+const float THRESHOLD = 0.75;
 
 void main() {
     uint lightIdx = uint(gl_FragCoord.y);

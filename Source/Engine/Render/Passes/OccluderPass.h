@@ -15,7 +15,7 @@ namespace Tourqe::Engine {
 	class ENGINE_API OccluderPass final : public RenderPass {
 		GENERATE_CLASS(OccluderPass)
 	public:
-		static constexpr u32 LightMapResolution = 512;
+		static constexpr u32 LightMapResolution = 1024;
 		static constexpr u32 MaxLights = 128;
 
 		virtual void OnInitialize() final;
