@@ -59,6 +59,8 @@ namespace Runtime::RHI {
 		[[nodiscard]] VmaAllocator GetAllocator() const { return _allocator; }
 		[[nodiscard]] VkAllocationCallbacks GetAllocationCallbacks() const { return _allocationCallbacks; }
 		[[nodiscard]] VkSampler GetSampler(StaticSampler sampler);
+
+		VkResult CreateSurfaceForWindow(void* windowHandle, VkSurfaceKHR* surface);
 	protected:
 		void CreateInstance();
 		void CreateVMA();

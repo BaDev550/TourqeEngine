@@ -13,14 +13,29 @@
 namespace Runtime::RHI {
 	void VulkanImGuiContext::CreateContext() {
 		auto* context = ImGui::CreateContext();
+		ImGui::SetCurrentContext(context);
+
 		auto& io = ImGui::GetIO();
+		auto& pio = ImGui::GetPlatformIO();
 		io.WantCaptureKeyboard = true;
 		io.WantCaptureMouse = true;
+		io.UserData = &_owner;
 		io.ConfigFlags |= ImGuiConfigFlags_IsSRGB;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		io.ConfigViewportsNoAutoMerge = false;
+		io.ConfigViewportsNoTaskBarIcon = true;
 
-		ImGui::SetCurrentContext(context);
-		ApplyStyle(Accent::Source);
+		if (!pio.Platform_CreateVkSurface) {
+			pio.Platform_CreateVkSurface = [](ImGuiViewport* vp, ImU64, const void*, ImU64* outSurface) -> int {
+				auto* ctx = static_cast<VulkanContext*>(ImGui::GetIO().UserData);
+				return static_cast<int>(ctx->CreateSurfaceForWindow(
+					vp->PlatformHandleRaw, reinterpret_cast<VkSurfaceKHR*>(outSurface)));
+				};
+		}
+
+		ApplyStyle(Accent::Orange);
 	}
 
 	void VulkanImGuiContext::CreateNativeImGui() {
@@ -52,16 +67,23 @@ namespace Runtime::RHI {
 		init_info.MinImageCount = 2;
 		init_info.ImageCount = 2;
 		init_info.UseDynamicRendering = true;
-
+		
 		VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
+		VkFormat viewportFormat = VK_FORMAT_R8G8B8A8_SRGB;
 		VkPipelineRenderingCreateInfoKHR info{};
 		info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
 		info.colorAttachmentCount = 1;
 		info.pColorAttachmentFormats = &format;
 		info.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT;
 
+		VkPipelineRenderingCreateInfoKHR viewportinfo{};
+		viewportinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+		viewportinfo.colorAttachmentCount = 1;
+		viewportinfo.pColorAttachmentFormats = &viewportFormat;
+		
 		init_info.PipelineInfoMain.PipelineRenderingCreateInfo = info;
-
+		init_info.PipelineInfoForViewports.PipelineRenderingCreateInfo = viewportinfo;
+		
 		ImGui_ImplVulkan_Init(&init_info);
 		Logger::Info("VulkanImGuiContext", "ImGui initialized");
 	}

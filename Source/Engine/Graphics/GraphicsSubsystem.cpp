@@ -122,26 +122,26 @@ namespace Tourqe::Engine {
 
 	void GraphicsSubsystem::OnUpdate() {
 		RHI::CommandBuffer* cmd = BeginFrame();
+		std::vector<CommandFunc> pending;
 		if (!cmd) return;
 
-		//{
-		//	auto* depthbuffer = GetSwapchain()->GetDepthAttachment();
-		//	glm::vec2 extent = GetSwapchain()->GetExtent();
-		//
-		//	cmd->TransitionImageLayout(depthbuffer, RHI::ImageLayout::DepthAttachment);
-		//
-		//	RHI::RenderingSubmitInfo submit{};
-		//	submit.colorAttachments = { backbuffer };
-		//	submit.depthAttachment = depthbuffer;
-		//	submit.extent = extent;
-		//	cmd->BeginDynamicRendering(submit);
-		//
-		//	cmd->EndDynamicRendering();
-		//}
-
 		auto* backbuffer = GetSwapchain()->GetColorAttachments()[_imageIndex];
+		auto* depthbuffer = GetSwapchain()->GetDepthAttachment();
+		glm::vec2 extent = GetSwapchain()->GetExtent();
 		cmd->TransitionImageLayout(backbuffer, RHI::ImageLayout::ColorAttachment);
-		cmd->TransitionImageLayout(backbuffer, RHI::ImageLayout::PresentSrc); // TEMP
+		cmd->TransitionImageLayout(depthbuffer, RHI::ImageLayout::DepthAttachment);
+		RHI::RenderingSubmitInfo submit{};
+		submit.colorAttachments = { backbuffer };
+		submit.depthAttachment = depthbuffer;
+		submit.extent = extent;
+		cmd->BeginDynamicRendering(submit);
+
+		cmd->EndDynamicRendering();
+		cmd->TransitionImageLayout(backbuffer, RHI::ImageLayout::PresentSrc);
+
+		pending.swap(_commandQueue);
+		for (auto& command : pending) { command(cmd); }
+
 		EndFrame();
 	}
 
@@ -192,16 +192,15 @@ namespace Tourqe::Engine {
 		_currentFrameIndex = _signalValue % MaxFramesInFlight;
 		const u64 waitValue = _nextSignalValue - MaxFramesInFlight;
 		FrameData& frame = _frames[_currentFrameIndex];
-		std::vector<CommandFunc> pending;
 
 		_timelineFence->Wait(_nextSignalValue - MaxFramesInFlight);
 	
 		Result result = _swapchain->AcquireNextImage(_imageIndex, frame.imageAvailableFence);
-		if (result.GetMessage() == "SwapchainIsOutOfDate") {
+		if (result.GetMessage() == "FailedToAcquireSwapchainImage" || result.GetMessage() == "SwapchainIsOutOfDate") {
 			_recreateSwapchainNextFrame = true;
 			return BeginFrame();
 		}
-		else if (result.GetMessage() == "FailedToAcquireSwapchainImage" || result.GetMessage() == "SwapchainIsSuboptimal") {
+		else if (result.GetMessage() == "SwapchainIsSuboptimal") {
 			_recreateSwapchainNextFrame = true;
 		}
 
@@ -212,9 +211,6 @@ namespace Tourqe::Engine {
 		frame.commandBuffer->Begin();
 		_frameRecording = true;
 		_canSubmitCommand = true;
-
-		pending.swap(_commandQueue);
-		for (auto& command : pending) { command(frame.commandBuffer); }
 
 		return frame.commandBuffer;
 	}

@@ -36,6 +36,7 @@ namespace Runtime::PAL {
 				return -1;
 			}
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)desc);
+
 			return 0;
 		}
 		case WM_SIZE: {
@@ -95,11 +96,16 @@ namespace Runtime::PAL {
 		wc.hInstance = _instance;
 		RegisterClassEx(&wc);
 
+		DWORD style = WS_OVERLAPPEDWINDOW;
+		if (desc.maximized) {
+			style |= WS_MAXIMIZE;
+		}
+
 		_handle = CreateWindowEx(
 			0,
 			TEXT(CLASSNAME),
 			TEXT(_desc.title.c_str()),
-			WS_OVERLAPPEDWINDOW,
+			style,
 			CW_USEDEFAULT, CW_USEDEFAULT, _desc.width, _desc.height,
 			nullptr,
 			nullptr,
@@ -111,8 +117,14 @@ namespace Runtime::PAL {
 			return;
 		}
 
-		ShowWindow(_handle, 1);
+		ShowWindow(_handle, desc.maximized ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
 		UpdateWindow(_handle);
+
+		RECT clientRect = {};
+		GetClientRect(_handle, &clientRect);
+		_desc.width = clientRect.right - clientRect.left;
+		_desc.height = clientRect.bottom - clientRect.top;
+
 		_running = true;
 	}
 

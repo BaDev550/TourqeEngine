@@ -15,6 +15,7 @@ namespace Runtime::PAL {
 
 		b8 resizable = true;
 		b8 minimized = false;
+		b8 maximized = true;
 
 		WindowEventCallback eventCallback = nullptr;
 	};

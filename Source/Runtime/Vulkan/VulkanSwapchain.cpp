@@ -117,6 +117,7 @@ namespace Runtime::RHI {
 		_desc.width = width;
 		_desc.height = height;
 		Recreate(_desc);
+		Logger::Info(GetObjectDebugName(), "VkSwapchainKHR = {}", (void*)_swapchain);
 	}
 
 	void VulkanSwapchain::Destroy() {

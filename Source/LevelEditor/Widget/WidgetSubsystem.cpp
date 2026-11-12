@@ -74,7 +74,6 @@ void WidgetSubsystem::OnUpdate() {
 
 			platform->ImGuiNewFrame();
 			imgui->Begin();
-			ImGui::NewFrame();
 
 			frame.cmd->BeginDynamicRendering(info, &debug);
 
@@ -82,7 +81,7 @@ void WidgetSubsystem::OnUpdate() {
 				widget->Draw();
 			}
 
-			ImGui::Render();
+			platform->ImGuiRender();
 			imgui->Flush(cmd);
 			frame.cmd->EndDynamicRendering();
 			frame.cmd->TransitionImageLayout(frame.color, Runtime::RHI::ImageLayout::PresentSrc);

@@ -15,6 +15,7 @@ namespace Runtime::PAL {
 		virtual void ImGuiCreateContext(void* windowHandle) final;
 		virtual void ImGuiDestroyContext() final;
 		virtual void ImGuiNewFrame() final;
+		virtual void ImGuiRender() final;
 
 		virtual Result WriteToFile(const Path& filePath, void* data, usize dataSize, usize dataOffset = 0) final;
 		virtual Result WriteToFile(const Path& filePath, const std::vector<u8>& data, usize dataSize, usize dataOffset = 0) final;

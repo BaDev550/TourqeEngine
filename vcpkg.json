@@ -12,6 +12,7 @@
       "name": "imgui",
       "version>=": "1.92.9",
       "features": [
+        "docking-experimental",
         "vulkan-binding",
         "win32-binding"
       ]

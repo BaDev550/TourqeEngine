@@ -22,7 +22,16 @@ namespace Runtime::PAL {
 	void WindowsContext::ImGuiDestroyContext() { 
 		ImGui_ImplWin32_Shutdown(); 
 	}
-	void WindowsContext::ImGuiNewFrame() { ImGui_ImplWin32_NewFrame(); }
+	void WindowsContext::ImGuiNewFrame() { 
+		ImGui_ImplWin32_NewFrame(); 
+		ImGui::NewFrame();
+	}
+
+	void WindowsContext::ImGuiRender() {
+		ImGui::Render();
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+	}
 
 	Result WindowsContext::WriteToFile(const Path& filePath, void* data, usize dataSize, usize dataOffset) {
 		if (dataSize == 0) {
@@ -258,5 +267,4 @@ namespace Runtime::PAL {
 
 		return Path("");
 	}
-
 }

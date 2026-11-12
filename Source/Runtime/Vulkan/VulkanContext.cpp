@@ -896,29 +896,7 @@ namespace Runtime::RHI {
 	}
 
 	void VulkanContext::CreateSurface() {
-		switch (_desc.platformDesc.platform)
-		{
-		case PAL::Platform::Windows: {
-			VkWin32SurfaceCreateInfoKHR info{};
-			info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-			info.hinstance = reinterpret_cast<HINSTANCE>(_desc.platformDesc.instance);
-			info.hwnd = reinterpret_cast<HWND>(_desc.platformDesc.windowHandle);
-
-			VkResult result = vkCreateWin32SurfaceKHR(_instance, &info, nullptr, &_surface);
-			if (result != VK_SUCCESS) { Logger::Error("RHIContextVulkan", "Failed to create Win32 surface!"); }
-			else {
-				Logger::Info("RHIContextVulkan", "Successfully created Vulkan surface.");
-			}
-			break;
-		}
-		case PAL::Platform::Linux: {
-			Logger::Warn("RHIContextVulkan", "No Linux support at time");
-			break;
-		}
-		default:
-			Logger::Fatal("RHIContextVulkan", "Unknowned platform");
-			break;
-		}
+		CreateSurfaceForWindow(reinterpret_cast<void*>(_desc.platformDesc.windowHandle), &_surface);
 	}
 
 	std::vector<const char*> VulkanContext::GetRequiredExtensions() {
@@ -966,5 +944,19 @@ namespace Runtime::RHI {
 			}
 		}
 		return 0;
+	}
+
+	VkResult VulkanContext::CreateSurfaceForWindow(void* windowHandle, VkSurfaceKHR* surface) {
+		switch (_desc.platformDesc.platform) {
+		case PAL::Platform::Windows: {
+			VkWin32SurfaceCreateInfoKHR info{};
+			info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+			info.hinstance = reinterpret_cast<HINSTANCE>(_desc.platformDesc.instance);
+			info.hwnd = reinterpret_cast<HWND>(windowHandle);
+			return vkCreateWin32SurfaceKHR(_instance, &info, nullptr, surface);
+		}
+		default:
+			return VK_ERROR_EXTENSION_NOT_PRESENT;
+		}
 	}
 }
