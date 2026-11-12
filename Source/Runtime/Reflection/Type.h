@@ -3,6 +3,7 @@
 #include <Runtime/Definitions/Types.h>
 #include <Runtime/Definitions/Logger.h>
 #include <Runtime/Memory/Allocator.h>
+#include <Runtime/Reflection/Property.h>
 #include <functional>
 #include <typeindex>
 #include <string>
@@ -21,9 +22,17 @@ namespace Runtime::Reflection {
 		[[nodiscard]] std::type_index GetTypeIndex() const { return _type; }
 		[[nodiscard]] std::type_index GetBaseTypeIndex() const { return _baseType; }
 
-		const std::string& GetName() const { return _name; }
-		usize GetSize() const { return _size; }
-		usize GetAlignment() const { return _alignment; }
+		[[nodiscard]] const std::string& GetName() const { return _name; }
+		[[nodiscard]] usize GetSize() const { return _size; }
+		[[nodiscard]] usize GetAlignment() const { return _alignment; }
+		[[nodiscard]] const std::vector<Property>& GetProperties() const { return _properties; }
+
+		const Property* FindProperty(std::string_view name) const {
+			for (const auto& prop : _properties) {
+				if (prop.GetName() == name) return &prop;
+			}
+			return nullptr;
+		}
 
 		void ConstructAt(void* mem) const {
 			if (!_constructFunc) {
@@ -82,6 +91,8 @@ namespace Runtime::Reflection {
 		usize _size;
 		usize _alignment;
 		bool _abstractClass;
+
+		std::vector<Property> _properties;
 
 		std::type_index _type = typeid(void);
 		std::type_index _baseType = typeid(void);

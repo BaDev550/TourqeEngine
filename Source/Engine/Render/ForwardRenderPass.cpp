@@ -78,34 +78,38 @@ namespace Tourqe::Engine {
 			frame.cmd->BindDescriptorSet(_forwardPassPipeline, globalSet, 0, 0);
 
 			auto spriteQueue = frame.GetDrawQueue(RenderQueue::Sprite);
+			if (!spriteQueue.empty()) {
+				std::stable_sort(spriteQueue.begin(), spriteQueue.end(), [](const RenderItem& a, const RenderItem& b) {
+					return a.drawOrder < b.drawOrder;
+					});
 
-			_spriteDatas.resize(spriteQueue.size());
+				_spriteDatas.resize(spriteQueue.size());
 
-			int i = 0;
-			for (const RenderItem& item : spriteQueue) {
-				SpriteData spriteData{};
-				spriteData.world = item.world;
-				spriteData.vertexBufferID = item.vertexBufferIndex;
-				spriteData.firstVertex = item.firstVertex;
-				spriteData.frameDataIndex = frame.frameDataBufferIndex;
-				spriteData.diffuseTextureID = item.textureID;
-				spriteData.normalTextureID = 0;
-				spriteData.samplerID = item.samplerID;
+				int i = 0;
+				for (const RenderItem& item : spriteQueue) {
+					SpriteData spriteData{};
+					spriteData.world = item.world;
+					spriteData.vertexBufferID = item.vertexBufferIndex;
+					spriteData.firstVertex = item.firstVertex;
+					spriteData.frameDataIndex = frame.frameDataBufferIndex;
+					spriteData.diffuseTextureID = item.textureID;
+					spriteData.normalTextureID = 0;
+					spriteData.samplerID = item.samplerID;
 
-				_spriteDatas[i] = spriteData;
-				i++;
+					_spriteDatas[i] = spriteData;
+					i++;
+				}
+
+				if (!_spriteDatas.empty()) {
+					_spriteDataStorageBuffer->Write(_spriteDatas.data(), (sizeof(SpriteData) * _spriteDatas.size()));
+
+					SpritePushConstant pc{};
+					pc.spriteDataBDA = _spriteDataStorageBuffer->GetGPUAdress();
+
+					frame.cmd->PushConstant(_forwardPassPipeline, &pc, sizeof(SpritePushConstant), 0);
+					frame.cmd->DrawVertex(6, spriteQueue.size());
+				}
 			}
-
-			if (!_spriteDatas.empty()) {
-				_spriteDataStorageBuffer->Write(_spriteDatas.data(), (sizeof(SpriteData) * _spriteDatas.size()));
-
-				SpritePushConstant pc{};
-				pc.spriteDataBDA = _spriteDataStorageBuffer->GetGPUAdress();
-
-				frame.cmd->PushConstant(_forwardPassPipeline, &pc, sizeof(SpritePushConstant), 0);
-				frame.cmd->DrawVertex(6, spriteQueue.size());
-			}
-
 			frame.cmd->EndDynamicRendering();
 			frame.cmd->TransitionImageLayout(frame.color, Runtime::RHI::ImageLayout::PresentSrc);
 		}

@@ -12,7 +12,12 @@ namespace Tourqe::Engine {
 		virtual void OnDestroy() override;
 
 		void RegisterGameObjects(Scene& scene);
+
+		GameObject* GetGameObject(EntityHandle handle) const;
+
+		[[nodiscard]] b8 IsScriptable(EntityHandle handle) const;
 	private:
 		std::vector<GameObject*> _gameObjects;
+		std::unordered_map<EntityHandle, i32> _gameObjectLookupTable;
 	};
 }

@@ -27,7 +27,18 @@ namespace Tourqe::Engine {
 			GameObject* gameObject = static_cast<GameObject*>(typeInfo.Create());
 			gameObject->OnInitialized(&scene);
 			gameObject->OnCreate();
+			_gameObjectLookupTable[gameObject->GetEntityHandle()] = _gameObjects.size();
 			_gameObjects.push_back(gameObject);
 			});
+	}
+
+	b8 ScriptingSystem::IsScriptable(EntityHandle handle) const { return _gameObjectLookupTable.find(handle) != _gameObjectLookupTable.end(); }
+
+	Tourqe::Engine::GameObject* ScriptingSystem::GetGameObject(EntityHandle handle) const {
+		auto it = _gameObjectLookupTable.find(handle);
+		if (it == _gameObjectLookupTable.end()) {
+			return nullptr;
+		}
+		return _gameObjects[it->second];
 	}
 }

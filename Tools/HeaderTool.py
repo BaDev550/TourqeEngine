@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 HEADER_EXTS = {".h", ".hpp", ".hh"}
@@ -11,6 +11,7 @@ GENERATED_SUFFIX = ".generated.h"
 MANIFEST_NAME = "reflectManifest.h"
 MARKER = "// reflect: "
 CLASS_MACRO = "TCLASS"
+PROP_MACRO = "TPROP"
 
 _NOISE = re.compile(
     r"""//[^\n]*"""
@@ -21,13 +22,21 @@ _NOISE = re.compile(
     re.S,
 )
 
+KNOWN_FLAGS = {
+    "None": "PropertyFlags::None",
+    "Edit": "PropertyFlags::Edit",
+    "ReadOnly": "PropertyFlags::ReadOnly",
+    "Serialize": "PropertyFlags::Serialize",
+    "Transient": "PropertyFlags::Transient",
+    "Color": "PropertyFlags::Color",
+}
 
 def strip_noise(text: str) -> str:
     def repl(m: re.Match) -> str:
         s = m.group(0)
         if s.startswith("/"):
-            return " "
-        return '""'
+            return "".join("\n" if ch == "\n" else " " for ch in s)
+        return '"' + (" " * (len(s) - 2)) + '"'
 
     return _NOISE.sub(repl, text)
 
@@ -39,9 +48,23 @@ _CLASS = (
     r"(?P<name>[A-Za-z_]\w*)\s*(?:final\s*)?"
     r"(?::(?P<bases>[^{;]*))?\{)"
 )
+_PROP = (
+    r"(?P<prop>\b" + PROP_MACRO + r"\s*\((?P<pattrs>[^)]*)\)\s*;?\s*"
+    r"(?P<ptype>(?:(?:const|mutable|volatile|typename|struct|class|enum)\s+)*"
+    r"[A-Za-z_][\w:\s<>,*&]*?)\s+"
+    r"(?P<pname>[A-Za-z_]\w*)\s*"
+    r"(?:\[[^\]]*\])?\s*"
+    r"(?:=\s*[^;]+|\{[^;]*\})?\s*;)"
+)
 _NAMESPACE = r"(?P<ns>\bnamespace\b\s*(?P<nsname>[A-Za-z_][\w:\s]*?)?\s*\{)"
-_TOKEN = re.compile("|".join([_CLASS, _NAMESPACE, r"(?P<open>\{)", r"(?P<close>\})"]))
+_TOKEN = re.compile("|".join([_CLASS, _PROP, _NAMESPACE, r"(?P<open>\{)", r"(?P<close>\})"]))
 
+@dataclass
+class PropInfo:
+    name: str
+    type_str: str
+    flags: list[str]
+    meta: list[tuple[str, str]]
 
 @dataclass
 class ClassInfo:
@@ -49,10 +72,10 @@ class ClassInfo:
     namespace: str
     scoped: str  # Outer::Inner (no namespace)
     base: str | None
+    props: list[PropInfo] = field(default_factory=list)
 
     @property
     def qualified(self) -> str:
-        """Fully qualified name, with a leading '::'."""
         return f"::{self.namespace}::{self.scoped}" if self.namespace else f"::{self.scoped}"
 
 
@@ -80,26 +103,64 @@ def pick_base(bases: str | None, kw: str) -> str | None:
             return re.sub(r"\s+", " ", (m.group(2) if m else p).strip())
     return None
 
+def parse_prop_attrs(raw_attrs: str) -> tuple[list[str], list[tuple[str, str]]]:
+    flags: list[str] = []
+    meta: list[tuple[str, str]] = []
 
-def parse_header(text: str) -> list[ClassInfo]:
-    text = strip_noise(text)
-    stack: list[tuple[str, str]] = []
+    if not raw_attrs.strip():
+        return ["PropertyFlags::Edit", "PropertyFlags::Serialize"], []
+
+    for part in raw_attrs.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if "=" in part:
+            k, v = part.split("=", 1)
+            k = k.strip().strip('"')
+            v = v.strip().strip('"')
+            meta.append((k, v))
+        else:
+            if part in KNOWN_FLAGS:
+                flags.append(KNOWN_FLAGS[part])
+            else:
+                meta.append((part, "true"))
+
+    if not flags:
+        flags = ["PropertyFlags::Edit", "PropertyFlags::Serialize"]
+
+    return flags, meta
+
+def parse_header(raw_text: str) -> list[ClassInfo]:
+    text = strip_noise(raw_text)
+    stack: list[tuple[str, str | ClassInfo]] = []
     found: list[ClassInfo] = []
 
     for m in _TOKEN.finditer(text):
         if m.group("cc"):
             name = m.group("name")
-            ns = "::".join(n for k, n in stack if k == "ns" and n)
-            outer = [n for k, n in stack if k == "cls"]
-            found.append(
-                ClassInfo(
-                    name=name,
-                    namespace=ns,
-                    scoped="::".join(outer + [name]),
-                    base=pick_base(m.group("bases"), m.group("kw")),
-                )
+            ns = "::".join(n for k, n in stack if k == "ns" and isinstance(n, str) and n)
+            outer = [n.name for k, n in stack if k == "cls" and isinstance(n, ClassInfo)]
+            cinfo = ClassInfo(
+                name=name,
+                namespace=ns,
+                scoped="::".join(outer + [name]),
+                base=pick_base(m.group("bases"), m.group("kw")),
             )
-            stack.append(("cls", name))
+            found.append(cinfo)
+            stack.append(("cls", cinfo))
+        elif m.group("prop"):
+            if stack and stack[-1][0] == "cls":
+                cinfo = stack[-1][1]
+                raw_attrs = raw_text[m.start("pattrs"):m.end("pattrs")]
+                flags, meta = parse_prop_attrs(raw_attrs)
+                cinfo.props.append(
+                    PropInfo(
+                        name=m.group("pname").strip(),
+                        type_str=m.group("ptype").strip(),
+                        flags=flags,
+                        meta=meta,
+                    )
+                )
         elif m.group("ns"):
             nsname = re.sub(r"\s+", "", m.group("nsname") or "")
             stack.append(("ns", nsname))
@@ -110,9 +171,7 @@ def parse_header(text: str) -> list[ClassInfo]:
                 stack.pop()
     return found
 
-
 def render_generated_header(header_inc: str, c: ClassInfo, registry_include: str, registry_ns: str) -> str:
-    """Emits a TypeAccessor<T> specialization that builds the type with TypeBuilder."""
     out = [
         "#pragma once",
         "",
@@ -132,6 +191,11 @@ def render_generated_header(header_inc: str, c: ClassInfo, registry_include: str
     out.append(f'\t\t\treturn TypeBuilder<{c.qualified}>::ForType("{c.name}")')
     if c.base:
         out.append(f"\t\t\t\t.Base<{c.base}>()")
+    for p in c.props:
+        flag_expr = " | ".join(p.flags) if p.flags else "PropertyFlags::None"
+        out.append(f'\t\t\t\t.Property<&{c.qualified}::{p.name}>("{p.name}", {flag_expr})')
+        for mk, mv in p.meta:
+            out.append(f'\t\t\t\t.Meta("{mk}", "{mv}")')
     out += [
         "\t\t\t\t.Build();",
         "\t\t}",

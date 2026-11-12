@@ -89,6 +89,8 @@ namespace Tourqe::Engine {
 					item.firstVertex = 0;
 					item.vertexCount = 6;
 					item.instanceCount = 1; // FIXME(0x): wtf
+					//item.drawOrder = BuildSpriteSort(sprite.zOrder, transform.position.y);
+					item.drawOrder = sprite.zOrder;
 					item.vertexBufferIndex = _spriteBuffer->GetBindlessIndex();
 					frame.queues.Push(RenderQueue::Sprite, item);
 					});

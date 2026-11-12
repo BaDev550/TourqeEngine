@@ -41,6 +41,27 @@ namespace Runtime::Reflection {
 			return *this;
 		}
 
+		template<auto MemberPtr>
+		TypeBuilder& Property(std::string name, PropertyFlags flags = PropertyFlags::Edit | PropertyFlags::Serialize) {
+			using MemberT = std::remove_cvref_t<decltype(std::declval<T>().*MemberPtr)>;
+			const usize offset = reinterpret_cast<usize>(&reinterpret_cast<char const volatile&>(((static_cast<T*>(nullptr))->*MemberPtr)));
+			_type._properties.emplace_back(
+				std::move(name),
+				std::type_index(typeid(MemberT)),
+				offset,
+				sizeof(MemberT),
+				flags
+			);
+			return *this;
+		}
+
+		TypeBuilder& Meta(std::string key, std::string value) {
+			if (!_type._properties.empty()) {
+				_type._properties.back().SetMeta(std::move(key), std::move(value));
+			}
+			return *this;
+		}
+
 		Type Build() { return std::move(_type); }
 	private:
 		Type _type;

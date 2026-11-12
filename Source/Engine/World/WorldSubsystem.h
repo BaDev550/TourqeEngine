@@ -15,6 +15,15 @@ namespace Tourqe::Engine { // All temp classes
 		virtual void GetDependencyGraph(DependencyGraph& graph) override;
 
 		[[nodiscard]] Scene* GetActiveScene() { return _activeScene; }
+
+		template<typename ST>
+		ST* GetSystem() {
+			for (auto* s : _systems) {
+				if (s && typeid(*s) == typeid(ST)) 
+					return static_cast<ST*>(s);
+			}
+			return nullptr;
+		}
 	private:
 		std::vector<System*> _systems;
 		Scene* _activeScene;

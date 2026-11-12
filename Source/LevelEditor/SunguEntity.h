@@ -26,6 +26,9 @@ public:
 		auto* spriteComponent = GetOwningScene()->AddComponent<SpriteComponent>(GetEntityHandle());
 		spriteComponent->TextureAssetHandle = boxtexture->GetAssetHandle();
 		spriteComponent->Visible = true;
+		spriteComponent->zOrder = 100;
+
+		SetScale(Runtime::Math::Vec3(5.0f));
 	}
 
 	virtual void OnUpdate() final {
@@ -35,31 +38,40 @@ public:
 			if (inputSystem->IsKeyPressed(Runtime::KeyCode::W)) {
 				SetPosition(
 					GetPosition() + 
-					Runtime::Math::Vec3(0.0f, 0.6f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime()
+					Runtime::Math::Vec3(0.0f, 1.0f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime() * _speed
 				);
 			}
 			if (inputSystem->IsKeyPressed(Runtime::KeyCode::S)) {
 				SetPosition(
 					GetPosition() +
-					Runtime::Math::Vec3(0.0f, -0.6f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime()
+					Runtime::Math::Vec3(0.0f, -1.0f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime() * _speed
 				);
 			}
 			if (inputSystem->IsKeyPressed(Runtime::KeyCode::D)) {
 				SetPosition(
 					GetPosition() +
-					Runtime::Math::Vec3(0.6f, 0.0f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime()
+					Runtime::Math::Vec3(1.0f, 0.0f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime() * _speed
 				);
+				_direction = -1.0f;
 			}
 			if (inputSystem->IsKeyPressed(Runtime::KeyCode::A)) {
 				SetPosition(
 					GetPosition() +
-					Runtime::Math::Vec3(-0.6f, 0.0f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime()
+					Runtime::Math::Vec3(-1.0f, 0.0f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime() * _speed
 				);
+				_direction = 1.0f;
 			}
 		}
+		SetRotation(Runtime::Math::Vec3(0.0f, _direction == -1.0f ? 180.0f : 0.0f , 0.0f));
 	}
 
 	virtual void OnDestroy() final {
 
 	}
+public:
+	TPROP(Edit, Category="Movement", Step=0.1f)
+	f32 _speed = 15.0f;
+
+	TPROP(ReadOnly, Category = "Movement")
+	f32 _direction = 1.0f;
 };

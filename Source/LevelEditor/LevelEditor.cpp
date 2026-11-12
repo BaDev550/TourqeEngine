@@ -23,7 +23,7 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 	auto assetSystem = _engine->GetSubsystem<AssetSubsystem>();
 	auto context = renderSystem->GetContext();
 
-	//Texture2D* boxtexture = assetSystem->Get<Texture2D>("warrior_bg.jpg");
+	Texture2D* bgtexture = assetSystem->Get<Texture2D>("warrior_bg.jpg");
 	//Texture2D* rocktexture = assetSystem->Get<Texture2D>("player_sprite.png");
 	//Texture2D* transparenttexture = assetSystem->Get<Texture2D>("Org.png");
 	
@@ -42,6 +42,19 @@ Runtime::Result LevelEditor::OnCreate(Engine* engine) {
 	//		idenity->name = "Entity_" + std::to_string(i);
 	//	}
 	//}
+
+	EntityHandle bgentity = worldSystem->GetActiveScene()->CreateEntity();
+	auto* transform = worldSystem->GetActiveScene()->AddComponent<TransformComponent>(bgentity);
+	transform->position = Runtime::Math::Vec3(0.0f, 0.0f, 0.0f);
+	transform->SetRotation(Runtime::Math::Vec3(0.0f));
+	transform->scale = Runtime::Math::Vec3(19.4f, 10.8f, 1.0f);
+	
+	auto* sprite = worldSystem->GetActiveScene()->AddComponent<SpriteComponent>(bgentity);
+	sprite->TextureAssetHandle = bgtexture->GetAssetHandle();
+	sprite->Visible = true;
+	
+	auto* idenity = worldSystem->GetActiveScene()->AddComponent<IdenityComponent>(bgentity);
+	idenity->name = "Background_";
 
     return Runtime::Result();
 }

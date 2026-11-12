@@ -4,11 +4,13 @@
 #include <Engine/Graphics/GraphicsSubsystem.h>
 #include <Engine/Platform/Window/WindowSubsystem.h>
 #include <Engine/World/WorldSubsystem.h>
+#include <Engine/World/Systems/ScriptingSystem.h>
 #include <Engine/Asset/AssetSubsystem.h>
 #include <Engine/World/Components/TransformComponent.h>
 #include <Engine/World/Components/SpriteComponent.h>
 #include <Engine/World/Components/IdenityComponent.h>
 #include <Runtime/Definitions/Profiler.h>
+#include <Widget/PropertyDrawer.h>
 
 #include <imgui.h>
 
@@ -23,7 +25,7 @@ void DebugOverlayWidget::Draw() {
 
 	ImGui::SetNextWindowPos(viewportPos, ImGuiCond_Always);
 	ImGui::SetNextWindowSize(viewportSize, ImGuiCond_Always);
-	ImGui::SetNextWindowBgAlpha(0.2f);
+	ImGui::SetNextWindowBgAlpha(0.8f);
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoDecoration |
 		ImGuiWindowFlags_NoNav |
@@ -58,6 +60,8 @@ void DebugOverlayWidget::Draw() {
 	if (ImGui::CollapsingHeader("World Subsystem Inspector")) {
 		ImGui::Indent();
 		auto* worldSystem = Engine::Get()->GetSubsystem<WorldSubsystem>();
+		auto* reflectionSystem = Engine::Get()->GetReflectionSystem();
+		auto* scriptSystem = worldSystem->GetSystem<ScriptingSystem>();
 
 		if (worldSystem && worldSystem->GetActiveScene()) {
 			auto scene = worldSystem->GetActiveScene();
@@ -70,31 +74,25 @@ void DebugOverlayWidget::Draw() {
 
 			ImGui::Separator();
 			if (_selectedEntity.IsValid()) {
-				IdenityComponent* idenity = scene->FindComponent<IdenityComponent>(_selectedEntity);
-				TransformComponent* transform = scene->FindComponent<TransformComponent>(_selectedEntity);
-
-				ImGui::Text("Name: %s", idenity->name.c_str());
-				ImGui::Text("UUID: %s", idenity->uuid.Str().c_str());
-
-				Runtime::Math::Vec3 eulerRot = transform->GetEulerRotation();
-
-				ImGui::DragFloat3("Position", &transform->position.x, 0.1f);
-				if (ImGui::DragFloat3("Rotation", &eulerRot.x, 0.1f)) {
-					transform->SetRotation(eulerRot);
+				if (IdenityComponent* idenity = scene->FindComponent<IdenityComponent>(_selectedEntity)) {
+					ImGui::Text("UUID: %s", idenity->uuid.Str().c_str());
+					DrawComponent(reflectionSystem, idenity);
 				}
-				ImGui::DragFloat3("Scale", &transform->scale.x, 0.1f);
+
+				if (TransformComponent* transform = scene->FindComponent<TransformComponent>(_selectedEntity)) {
+					DrawComponent(reflectionSystem, transform);
+				}
 
 				if (scene->HasComponent<SpriteComponent>(_selectedEntity)) {
 					SpriteComponent* sprite = scene->FindComponent<SpriteComponent>(_selectedEntity);
-					ImGui::Text("Drawable Entity");
-
-					ImGui::Text("Visible: %d", sprite->Visible);
-					if (sprite->Visible) {
-						ImGui::Text("SpriteAssetHandle: %d", sprite->TextureAssetHandle.index);
-					}
+					DrawComponent(reflectionSystem, sprite);
 				}
-				else {
-					ImGui::Text("Basic Entity");
+
+				if (scriptSystem->IsScriptable(_selectedEntity)) {
+					if (GameObject* gameObject = scriptSystem->GetGameObject(_selectedEntity)) {
+						const Runtime::Reflection::Type* scriptType = reflectionSystem->GetType(std::string(gameObject->GetClassName()));
+						DrawReflectedObject(scriptType, gameObject);
+					}
 				}
 			}
 		}

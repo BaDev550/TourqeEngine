@@ -15,13 +15,12 @@ namespace Tourqe::Engine {
 	class TransformComponent : public BaseComponent {
 		GENERATE_CLASS(TransformComponent);
 	public:
-		TPROP();
+		TPROP(Edit, Transient);
 		Math::Vec3 position = Math::Vec3(1.0f);
 
-		TPROP();
 		Math::Quat rotation = Math::Quat();
 
-		TPROP();
+		TPROP(Edit, Transient);
 		Math::Vec3 scale = Math::Vec3(1.0f);
 
 		Math::Mat4 world = Math::Mat4();
@@ -37,7 +36,7 @@ namespace Tourqe::Engine {
 
 		[[nodiscard]] const Math::Vec3 GetEulerRotation() const { return rotationEuler; }
 	private:
-		TPROP();
+		TPROP(Edit, Transient);
 		Math::Vec3 rotationEuler;
 	};
 }

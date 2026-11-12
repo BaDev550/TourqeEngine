@@ -17,7 +17,7 @@ namespace Tourqe::Engine {
 	}
 
 	void GameObject::SetRotation(const Runtime::Math::Vec3& rotation) {
-		GetOwningScene()->FindComponent<TransformComponent>(_handle)->rotation = rotation;
+		GetOwningScene()->FindComponent<TransformComponent>(_handle)->SetRotation(rotation);
 	}
 
 	void GameObject::SetScale(const Runtime::Math::Vec3& scale) {
