@@ -21,7 +21,7 @@ public:
 		Logger::Info("Erturul", "SunguEntity created");
 		auto assetSystem = Engine::Get()->GetSubsystem<AssetSubsystem>();
 
-		Texture2D* boxtexture = assetSystem->Get<Texture2D>("player_sprite.png");
+		Texture2D* boxtexture = assetSystem->Get<Texture2D>("Assets/Dungeon/priest1_v1_1.png");
 
 		auto* spriteComponent = GetOwningScene()->AddComponent<SpriteComponent>(GetEntityHandle());
 		spriteComponent->TextureAssetHandle = boxtexture->GetAssetHandle();
@@ -52,14 +52,14 @@ public:
 					GetPosition() +
 					Runtime::Math::Vec3(1.0f, 0.0f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime() * _speed
 				);
-				_direction = -1.0f;
+				_direction = 1.0f;
 			}
 			if (inputSystem->IsKeyPressed(Runtime::KeyCode::A)) {
 				SetPosition(
 					GetPosition() +
 					Runtime::Math::Vec3(-1.0f, 0.0f, 0.0f) * Engine::Get()->GetTime().GetDeltaTime() * _speed
 				);
-				_direction = 1.0f;
+				_direction = -1.0f;
 			}
 		}
 		SetRotation(Runtime::Math::Vec3(0.0f, _direction == -1.0f ? 180.0f : 0.0f , 0.0f));

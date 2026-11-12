@@ -32,16 +32,16 @@ namespace Runtime::PAL {
 
 		std::string pathDir = filePath.GetParentDirectory();
 		if (!pathDir.empty() && !DirectoryExists(pathDir)) {
-			Logger::Warn("WindowsIO", "Directory {} does not exist, creating directory", pathDir);
+			Logger::Warn("WindowsIO", "Directory '{}' does not exist, creating directory", pathDir);
 			Result result = CreateD(pathDir);
 			if (!result) {
-				Logger::Error("WindowsIO", "Failed to create directory {}", pathDir);
+				Logger::Error("WindowsIO", "Failed to create directory '{}'", pathDir);
 				return Result("Failed to create directory");
 			}
 		}
 
 		if (!FileExists(filePath)) {
-			Logger::Warn("WindowsIO", "File {} does not exist, creating file", filePath.GetPathStr());
+			Logger::Warn("WindowsIO", "File '{}' does not exist, creating file", filePath.GetPathStr());
 		}
 
 		const char* mode = (dataOffset > 0 && FileExists(filePath)) ? "r+b" : "wb";
@@ -67,7 +67,7 @@ namespace Runtime::PAL {
 
 	std::vector<u8> WindowsContext::ReadFromFile(const Path& filePath) {
 		if (!FileExists(filePath)) {
-			Logger::Warn("WindowsIO", "File {} does not exist", filePath.GetPathStr());
+			Logger::Warn("WindowsIO", "File '{}' does not exist", filePath.GetPathStr());
 			return {};
 		}
 
@@ -109,7 +109,7 @@ namespace Runtime::PAL {
 
 	Result WindowsContext::MapFile(const Path& filePath, std::vector<u8>& mappedBuffer) {
 		if (!FileExists(filePath)) {
-			Logger::Warn("WindowsIO", "File {} does not exist", filePath.GetPathStr());
+			Logger::Warn("WindowsIO", "File '{}' does not exist", filePath.GetPathStr());
 			return Result("File does not exist");
 		}
 
@@ -155,11 +155,47 @@ namespace Runtime::PAL {
 	}
 
 	Result WindowsContext::CreateD(const Path& directoryPath) {
-		BOOL result = CreateDirectory(directoryPath.GetPathCStr(), NULL);
-		if (!result) {
-			Logger::Error("WindowsIO", "Failed to create directory: {}", directoryPath.GetPathStr());
-			return Result("Failed to create directory");
+		std::string raw = directoryPath.GetPathStr();
+		if (raw.empty()) {
+			return Result();
 		}
+
+		std::string norm;
+		norm.reserve(raw.size());
+		for (char c : raw) {
+			char ch = (c == '/') ? '\\' : c;
+			if (ch == '\\' && !norm.empty() && norm.back() == '\\') {
+				continue;
+			}
+			norm.push_back(ch);
+		}
+
+		if (norm.size() > 1 && norm.back() == '\\' && norm[norm.size() - 2] != ':') { norm.pop_back(); }
+
+		for (usize i = 0; i < norm.size(); ++i) {
+			if (norm[i] == '\\' && i > 0) {
+				if (norm[i - 1] == ':') {
+					continue;
+				}
+				std::string subDir = norm.substr(0, i);
+				if (!CreateDirectoryA(subDir.c_str(), NULL)) {
+					DWORD err = GetLastError();
+					if (err != ERROR_ALREADY_EXISTS) {
+						Logger::Error("WindowsIO", "Failed to create parent directory: {} (Win32 Error: {})", subDir, err);
+						return Result("Failed to create parent directory");
+					}
+				}
+			}
+		}
+
+		if (!CreateDirectoryA(norm.c_str(), NULL)) {
+			DWORD err = GetLastError();
+			if (err != ERROR_ALREADY_EXISTS) {
+				Logger::Error("WindowsIO", "Failed to create directory: {} (Win32 Error: {})", norm, err);
+				return Result("Failed to create directory");
+			}
+		}
+
 		return Result();
 	}
 
@@ -189,4 +225,38 @@ namespace Runtime::PAL {
 		}
 		return reinterpret_cast<void*>(GetProcAddress(mainExeModule, symbolName));
 	}
+
+	Runtime::Path WindowsContext::OpenFileDialog(const char* filter /*= "All Files (*.*)\0*.*\0"*/, void* ownerWindowHandle /*= nullptr*/) {
+		char fileBuffer[MAX_PATH] = {};
+		char currentDir[MAX_PATH] = {};
+		GetCurrentDirectoryA(MAX_PATH, currentDir);
+
+		std::string assetsDir = std::string(currentDir) + "\\Assets";
+
+		OPENFILENAMEA ofn = {};
+		ofn.lStructSize = sizeof(OPENFILENAMEA);
+		ofn.hwndOwner = static_cast<HWND>(ownerWindowHandle);
+		ofn.lpstrFile = fileBuffer;
+		ofn.nMaxFile = sizeof(fileBuffer);
+		ofn.lpstrFilter = filter;
+		ofn.nFilterIndex = 1;
+		ofn.lpstrInitialDir = assetsDir.c_str(); // Opens directly inside bin/Assets/
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+		if (GetOpenFileNameA(&ofn) == TRUE) {
+			std::string selected(fileBuffer);
+			std::string cwdPrefix = std::string(currentDir) + "\\";
+			if (selected.starts_with(cwdPrefix)) {
+				selected = selected.substr(cwdPrefix.size());
+			}
+
+			for (char& c : selected) {
+				if (c == '\\') c = '/';
+			}
+			return Path(selected);
+		}
+
+		return Path("");
+	}
+
 }

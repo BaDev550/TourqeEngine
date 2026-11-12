@@ -124,27 +124,24 @@ namespace Tourqe::Engine {
 		RHI::CommandBuffer* cmd = BeginFrame();
 		if (!cmd) return;
 
-		{
-			auto* backbuffer = GetSwapchain()->GetColorAttachments()[_imageIndex];
-			auto* depthbuffer = GetSwapchain()->GetDepthAttachment();
-			glm::vec2 extent = GetSwapchain()->GetExtent();
-		
-			cmd->TransitionImageLayout(backbuffer, RHI::ImageLayout::ColorAttachment);
-			cmd->TransitionImageLayout(depthbuffer, RHI::ImageLayout::DepthAttachment);
-		
-			RHI::RenderingSubmitInfo submit{};
-			submit.colorAttachments = { backbuffer };
-			submit.depthAttachment = depthbuffer;
-			submit.extent = extent;
-			cmd->BeginDynamicRendering(submit);
-		
-			cmd->EndDynamicRendering();
-			cmd->TransitionImageLayout(backbuffer, RHI::ImageLayout::PresentSrc);
-		}
+		//{
+		//	auto* depthbuffer = GetSwapchain()->GetDepthAttachment();
+		//	glm::vec2 extent = GetSwapchain()->GetExtent();
+		//
+		//	cmd->TransitionImageLayout(depthbuffer, RHI::ImageLayout::DepthAttachment);
+		//
+		//	RHI::RenderingSubmitInfo submit{};
+		//	submit.colorAttachments = { backbuffer };
+		//	submit.depthAttachment = depthbuffer;
+		//	submit.extent = extent;
+		//	cmd->BeginDynamicRendering(submit);
+		//
+		//	cmd->EndDynamicRendering();
+		//}
 
-		for (auto& command : _commandQueue) { command(cmd); }
-		_commandQueue.clear();
-
+		auto* backbuffer = GetSwapchain()->GetColorAttachments()[_imageIndex];
+		cmd->TransitionImageLayout(backbuffer, RHI::ImageLayout::ColorAttachment);
+		cmd->TransitionImageLayout(backbuffer, RHI::ImageLayout::PresentSrc); // TEMP
 		EndFrame();
 	}
 
@@ -195,6 +192,7 @@ namespace Tourqe::Engine {
 		_currentFrameIndex = _signalValue % MaxFramesInFlight;
 		const u64 waitValue = _nextSignalValue - MaxFramesInFlight;
 		FrameData& frame = _frames[_currentFrameIndex];
+		std::vector<CommandFunc> pending;
 
 		_timelineFence->Wait(_nextSignalValue - MaxFramesInFlight);
 	
@@ -214,6 +212,9 @@ namespace Tourqe::Engine {
 		frame.commandBuffer->Begin();
 		_frameRecording = true;
 		_canSubmitCommand = true;
+
+		pending.swap(_commandQueue);
+		for (auto& command : pending) { command(frame.commandBuffer); }
 
 		return frame.commandBuffer;
 	}

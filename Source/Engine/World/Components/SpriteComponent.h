@@ -8,13 +8,13 @@ namespace Tourqe::Engine {
 	class SpriteComponent : public BaseComponent {
 		GENERATE_CLASS(SpriteComponent);
 	public:
-		TPROP();
+		TPROP(Edit, Serialize, AssetType = "Texture2D")
 		AssetHandle TextureAssetHandle = 0;
 
-		TPROP();
+		TPROP(Edit, Serialize)
 		b8 Visible;
 
-		TPROP();
+		TPROP(Edit, Serialize, Catagory = "Render")
 		int zOrder = 0;
 	};
 

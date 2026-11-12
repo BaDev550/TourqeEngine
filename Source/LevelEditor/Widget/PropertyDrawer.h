@@ -5,6 +5,7 @@
 #include <Engine/Reflection/ReflectionSystem.h>
 #include <Engine/World/WorldSubsystem.h>
 #include <Engine/Asset/AssetSubsystem.h>
+#include <Engine/Asset/Texture/Texture2D.h>
 #include <Engine/World/Components/TransformComponent.h>
 #include <Engine/World/Components/SpriteComponent.h>
 #include <Engine/World/Components/IdenityComponent.h>
@@ -80,6 +81,56 @@ namespace {
 				else if (propType == typeid(Runtime::UUID)) {
 					Runtime::UUID* uuid = prop.GetPtr<UUID>(instance);
 					ImGui::Text("UUID: %s", uuid->Str().c_str());
+				}
+				else if (propType == typeid(AssetHandle)) {
+					auto* handlePtr = prop.GetPtr<AssetHandle>(instance);
+					auto* assetSystem = Engine::Get()->GetSubsystem<AssetSubsystem>();
+
+					if (assetSystem && handlePtr) {
+						const auto& sources = assetSystem->GetAssetSources();
+						const std::string* filterType = prop.GetMeta("AssetType");
+
+						const char* currentLabel = "<None>";
+						auto currentIt = sources.find(*handlePtr);
+						if (currentIt != sources.end()) {
+							currentLabel = currentIt->second.sourcePath.c_str();
+						}
+
+						if (ImGui::BeginCombo(label, currentLabel)) {
+							for (const auto& [candidateHandle, source] : sources) {
+								if (filterType && !filterType->empty() && source.type != *filterType) {
+									continue;
+								}
+
+								const bool isSelected = (candidateHandle.index == handlePtr->index);
+								if (ImGui::Selectable(source.sourcePath.c_str(), isSelected)) {
+									if (!filterType || *filterType == "Texture2D") {
+										if (auto* tex = assetSystem->Get<Texture2D>(candidateHandle)) {
+											*handlePtr = tex->GetAssetHandle();
+										}
+									}
+									else {
+										*handlePtr = candidateHandle;
+									}
+								}
+
+								if (isSelected) {
+									ImGui::SetItemDefaultFocus();
+								}
+							}
+							ImGui::EndCombo();
+						}
+
+						if (ImGui::BeginDragDropTarget()) {
+							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_HANDLE")) {
+								AssetHandle droppedHandle = *static_cast<const AssetHandle*>(payload->Data);
+								if (auto* tex = assetSystem->Get<Texture2D>(droppedHandle)) {
+									*handlePtr = tex->GetAssetHandle();
+								}
+							}
+							ImGui::EndDragDropTarget();
+						}
+					}
 				}
 				else {
 					ImGui::TextDisabled("UNKNOWNED TYPE: %s (%zu bytes)", label, prop.GetSize());

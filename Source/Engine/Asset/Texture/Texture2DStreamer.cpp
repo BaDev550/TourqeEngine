@@ -29,7 +29,11 @@ namespace Tourqe::Engine {
         std::vector<u8> compressedData;
         platform->MapFile(source.sourcePath, rawData);
         u8* rawImageData = stbi_load_from_memory(rawData.data(), (rawData.size() * sizeof(u8)), &width, &height, &comp, 4);
-        
+        if (!rawImageData) {
+            stbi_image_free(rawImageData);
+            return Runtime::Result("Failed to load image");
+        }
+
         ImageCompressor::CompressImageToBC3(rawImageData, width, height, compressedData);
 
         stbi_image_free(rawImageData);
@@ -38,7 +42,7 @@ namespace Tourqe::Engine {
         imageDesc.format = Runtime::RHI::Format::BC3;
         imageDesc.width = width;
         imageDesc.height = height;
-        imageDesc.sampler = Runtime::RHI::StaticSampler::LinearClamp;
+        imageDesc.sampler = Runtime::RHI::StaticSampler::NearestClamp;
         imageDesc.view.type = Runtime::RHI::ImageViewType::Image2D;
         imageDesc.usage = Runtime::RHI::ImageUsage::Sampled | Runtime::RHI::ImageUsage::TransferDst;
         imageDesc.tileMode = Runtime::RHI::ImageTileMode::Optimal;
@@ -103,6 +107,7 @@ namespace Tourqe::Engine {
 			cmd->CopyBufferToImage(stagingBuffer, texture->_image, Runtime::RHI::ImageLayout::TransferDst, imageDesc.width, imageDesc.height);
 			cmd->TransitionImageLayout(texture->_image, Runtime::RHI::ImageLayout::ShaderReadOnly);
 			texture->SetAssetState(AssetState::Ready);
+            Logger::Info("GraphicsSubsystem", "Texture loaded to GPU");
             });
 
         texture->SetAssetState(AssetState::Loaded);

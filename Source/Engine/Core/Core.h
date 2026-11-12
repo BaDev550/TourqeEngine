@@ -20,4 +20,4 @@
 #define CACHE_DIR Runtime::Path("cache/")
 #define COOKED_ASSET_DIR Runtime::Path("cooked/")
 #define ASSET_EXTENSION ".casset"
-#define ASSET_REGISTRY_PATH "assetReg.json"
+#define ASSET_REGISTRY_PATH (CACHE_DIR / Runtime::Path("assetReg.json"))

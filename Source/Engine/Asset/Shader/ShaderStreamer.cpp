@@ -99,6 +99,7 @@ namespace Tourqe::Engine {
 		std::memcpy(desc.code.data(), fulldata.data() + header.dataOffset, header.dataSize);
 
 		Shader* shader = Runtime::Mem::Allocator::Construct<Shader>(desc);
+		shader->SetAssetState(AssetState::Loaded);
 
 		return std::move(shader);
     }

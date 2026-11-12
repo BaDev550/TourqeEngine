@@ -74,8 +74,9 @@ namespace Tourqe::Engine {
 					if (!sprite.Visible) return;
 					if (!sprite.TextureAssetHandle.IsValid()) return;
 
-					Texture2D* asset = static_cast<Texture2D*>(assetSystem->TryAsset(sprite.TextureAssetHandle));
-					if (!asset) return;
+					Texture2D* asset = assetSystem->Get<Texture2D>(sprite.TextureAssetHandle);
+					if (!asset || (asset->GetAssetState() != AssetState::Ready)) 
+						return;
 					
 					transform.world =
 						Runtime::Math::Mat4::Translation(transform.position) *

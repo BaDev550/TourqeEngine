@@ -16,19 +16,34 @@ namespace Tourqe::Engine {
 		virtual void GetDependencyGraph(DependencyGraph& graph) override;
 
 		template<class AssetT> requires(std::is_base_of_v<Asset, AssetT>)
+			AssetT* Get(AssetHandle handle) {
+			if (Asset* existing = TryAsset(handle)) {
+				return static_cast<AssetT*>(existing);
+			}
+			if (AssetInCache(handle)) {
+				return static_cast<AssetT*>(Load(handle));
+			}
+			return nullptr;
+		}
+
+		template<class AssetT> requires(std::is_base_of_v<Asset, AssetT>)
 		AssetT* Get(const std::string& path) {
 			std::string assetType = AssetT::GetStaticClassName().data();
 
-			Runtime::Path sourcePath = path;
-			Runtime::Path targetPath = COOKED_ASSET_DIR / Runtime::Path(path).ReplaceExtension(ASSET_EXTENSION);
+			Runtime::Path inputPath(path);
+			Runtime::Path sourcePath = inputPath.Relative("Assets");
+
 			AssetHandle assetID;
-			assetID.index = _assets.size(); // HASH amk
+			assetID.index = static_cast<u32>(std::hash<std::string>{}(sourcePath.GetPathStr()));
+
+			if (Asset* existing = TryAsset(assetID)) { return static_cast<AssetT*>(existing); }
 
 			if (AssetInCache(assetID)) {
 				Logger::Info("AssetSubsystem", "Asset in registry loading...");
 				return static_cast<AssetT*>(Load(assetID));
 			}
 			else {
+				Runtime::Path targetPath = (COOKED_ASSET_DIR / Runtime::Path(path).ReplaceExtension(ASSET_EXTENSION));
 				AssetStreamer* streamer = GetAssetCookerOfType(assetType);
 
 				if (streamer) {
@@ -41,7 +56,6 @@ namespace Tourqe::Engine {
 					Runtime::Result result = streamer->Cook(source);
 					if (result) {
 						_cachedAssetSources[source.handle] = source;
-
 						AssetT* ast = static_cast<AssetT*>(Load(source.handle));
 
 						SaveRegistry();

@@ -30,6 +30,8 @@ namespace Runtime::PAL {
 		virtual b8 FileExists(const Path& filePath) final;
 		virtual b8 DirectoryExists(const Path& directoryPath) final;
 
+		virtual Path OpenFileDialog(const char* filter = "All Files (*.*)\0*.*\0", void* ownerWindowHandle = nullptr) final;
+
 		virtual void* GetMainModuleSymbol(const char* symbolName) final;
 	};
 }

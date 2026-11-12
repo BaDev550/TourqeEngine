@@ -6,6 +6,7 @@
 #include <Engine/Asset/AssetStreamer.h>
 #include <Engine/Asset/Texture/Texture2DStreamer.h>
 #include <Engine/Asset/Shader/ShaderStreamer.h>
+#include <Engine/Platform/PlatformSystem.h>
 
 #include <Engine/Asset/Asset.h>
 #include <Engine/Asset/Texture/Texture2D.h>
@@ -52,7 +53,9 @@ namespace Tourqe::Engine {
 	}
 
 	Asset* AssetSubsystem::Load(AssetHandle handle) {
-		Logger::Info("AssetSubystem", "Reading asset file");
+		if (auto it = _assets.find(handle); it != _assets.end() && it->second != nullptr) {
+			return it->second;
+		}
 
 		AssetSource cachedSource = _cachedAssetSources.find(handle)->second;
 		AssetStreamer* streamer = GetAssetCookerOfType(cachedSource.type);
@@ -108,6 +111,11 @@ namespace Tourqe::Engine {
 	void AssetSubsystem::GetDependencyGraph(DependencyGraph& graph) { }
 
 	void AssetSubsystem::SaveRegistry() {
+		auto* platform = Engine::Get()->GetPlatformSystem()->GetPlatform();
+		if (!platform->DirectoryExists(CACHE_DIR)) {
+			platform->CreateD(CACHE_DIR);
+		}
+
 		nlohmann::json j;
 
 		std::vector<nlohmann::json> registry;
